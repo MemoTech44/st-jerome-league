@@ -4,15 +4,14 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBz1TUCBKPspkCDEcOUXC3xN4CoX36VDMA",
-  authDomain: "st-jerome-league.firebaseapp.com",
-  projectId: "st-jerome-league",
-  storageBucket: "st-jerome-league.firebasestorage.app",
-  messagingSenderId: "429633017658",
-  appId: "1:429633017658:web:b5fc4a2ed94c3db5772203",
-  measurementId: "G-KBRNECM63N"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
@@ -24,5 +23,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const analytics = getAnalytics(app);
 
-// Export services to be used in your components
 export { auth, db, storage, analytics };
