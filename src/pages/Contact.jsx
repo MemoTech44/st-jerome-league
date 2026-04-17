@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { 
   Mail, Phone, MapPin, Send, Clock, 
-  CheckCircle, Loader2, MessageSquare, Twitter, Instagram 
+  CheckCircle, Loader2, ShieldCheck, MessageSquare
 } from 'lucide-react';
 
 const Contact = () => {
@@ -53,7 +53,7 @@ const Contact = () => {
           display: grid; 
           grid-template-columns: 0.9fr 1.1fr; 
           gap: 80px; 
-          align-items: start; 
+          align-items: center; 
         }
         
         .c-title { 
@@ -65,6 +65,7 @@ const Contact = () => {
           margin-bottom: 30px; 
         }
         .accent-blue { color: #1e40af; }
+        
         .c-lead { 
           color: #64748b; 
           font-size: 1.2rem; 
@@ -74,7 +75,6 @@ const Contact = () => {
           max-width: 500px;
         }
 
-        /* INFO CARDS */
         .info-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         .info-card { 
           background: white; 
@@ -86,12 +86,12 @@ const Contact = () => {
           border: 1px solid #e2e8f0; 
           transition: all 0.3s ease; 
         }
-        .info-card:hover { transform: translateX(10px); border-color: #1e40af; }
+        .info-card:hover { transform: translateX(10px); border-color: #1e40af; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
         
         .icon-box { 
           width: 56px; 
           height: 56px; 
-          background: #f1f5f9; 
+          background: #eff6ff; 
           border-radius: 16px; 
           display: flex; 
           align-items: center; 
@@ -99,7 +99,6 @@ const Contact = () => {
           color: #1e40af; 
         }
 
-        /* FORM BOX */
         .form-box { 
           background: white; 
           padding: 60px; 
@@ -107,6 +106,7 @@ const Contact = () => {
           border: 1px solid #e2e8f0; 
           box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.08); 
         }
+        
         .input-group { margin-bottom: 25px; }
         .input-group label { 
           display: block; 
@@ -156,19 +156,16 @@ const Contact = () => {
         .c-btn:hover { background: #1e3a8a; transform: translateY(-3px); }
         .c-btn:disabled { background: #94a3b8; transform: none; }
 
-        /* COMMUNITY BOX */
-        .community-section {
-          margin-top: 50px;
-          padding-top: 40px;
-          border-top: 1px solid #f1f5f9;
+        .trust-badge {
+          margin-top: 30px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          justify-content: center;
+          color: #64748b;
+          font-size: 0.85rem;
+          font-weight: 600;
         }
-        .social-row { display: flex; gap: 15px; margin-top: 15px; }
-        .social-icon { 
-          width: 45px; height: 45px; border-radius: 12px; 
-          background: #f1f5f9; display: flex; align-items: center; 
-          justify-content: center; color: #1e40af; transition: 0.3s; 
-        }
-        .social-icon:hover { background: #1e40af; color: white; }
 
         @media (max-width: 1000px) {
           .c-container { grid-template-columns: 1fr; gap: 50px; }
@@ -183,7 +180,7 @@ const Contact = () => {
           <div className="c-info-side">
             <h1 className="c-title">Get in <br/><span className="accent-blue">The Arena.</span></h1>
             <p className="c-lead">
-              Have questions about registration, sponsorship, or upcoming fixtures? Our executive committee is ready to assist.
+              Official communication channel for the St. Jerome League. Reach out for registration, fixtures, or alumni partnership inquiries.
             </p>
 
             <div className="info-grid">
@@ -198,7 +195,7 @@ const Contact = () => {
               <div className="info-card">
                 <div className="icon-box"><Phone size={24}/></div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Call Center</h4>
+                  <h4 style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Direct Line</h4>
                   <p style={{ margin: '4px 0 0', fontWeight: 800 }}>+256 700 123 456</p>
                 </div>
               </div>
@@ -206,20 +203,17 @@ const Contact = () => {
               <div className="info-card">
                 <div className="icon-box"><MapPin size={24}/></div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Headquarters</h4>
+                  <h4 style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>League Office</h4>
                   <p style={{ margin: '4px 0 0', fontWeight: 800 }}>Kampala, Uganda</p>
                 </div>
               </div>
             </div>
-
-            <div className="community-section">
-              <h4 style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>Join the Community</h4>
-              <p style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '5px' }}>Stay updated on Twitter and Instagram.</p>
-              <div className="social-row">
-                <a href="#" className="social-icon"><Twitter size={20}/></a>
-                <a href="#" className="social-icon"><Instagram size={20}/></a>
-                <a href="#" className="social-icon"><MessageSquare size={20}/></a>
-              </div>
+            
+            <div style={{ marginTop: '40px', padding: '20px', background: '#f1f5f9', borderRadius: '20px', display: 'flex', gap: '15px' }}>
+               <MessageSquare className="text-blue-800" />
+               <p style={{ margin: 0, fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>
+                 Looking for match results or standings? Visit the <strong>Match Centre</strong> on the home page.
+               </p>
             </div>
           </div>
 
@@ -229,38 +223,38 @@ const Contact = () => {
                 <div style={{ width: '80px', height: '80px', background: '#ecfdf5', color: '#059669', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 25px' }}>
                   <CheckCircle size={40} />
                 </div>
-                <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '10px' }}>Message Received!</h2>
+                <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '10px' }}>Message Sent!</h2>
                 <p style={{ color: '#64748b', fontWeight: 600, fontSize: '1.1rem' }}>
-                  We’ve logged your inquiry and will be in touch via email shortly.
+                  Thank you for reaching out. The committee will get back to you shortly.
                 </p>
                 <button 
                   onClick={() => setSubmitted(false)} 
                   className="c-btn" 
                   style={{ marginTop: '40px', background: '#f1f5f9', color: '#1e40af', boxShadow: 'none' }}
                 >
-                  Send Another Inquiry
+                  Send Another Message
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   <div className="input-group">
-                    <label>Your Name</label>
+                    <label>Full Name</label>
                     <input 
                       type="text" 
                       className="c-input" 
-                      placeholder="e.g. Kato Musa" 
+                      placeholder="Enter name" 
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       required 
                     />
                   </div>
                   <div className="input-group">
-                    <label>Email Address</label>
+                    <label>Email</label>
                     <input 
                       type="email" 
                       className="c-input" 
-                      placeholder="e.g. kato@email.com" 
+                      placeholder="Enter email" 
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       required 
@@ -269,25 +263,25 @@ const Contact = () => {
                 </div>
 
                 <div className="input-group">
-                  <label>Subject of Interest</label>
+                  <label>Inquiry Type</label>
                   <select 
                     className="c-input" 
                     value={formData.subject}
                     onChange={(e) => setFormData({...formData, subject: e.target.value})}
                   >
                     <option>General Inquiry</option>
-                    <option>Club Membership</option>
-                    <option>Sponsorship Opportunities</option>
-                    <option>Technical Support</option>
+                    <option>Player Registration</option>
+                    <option>Team Sponsorship</option>
+                    <option>Media & Press</option>
                   </select>
                 </div>
 
                 <div className="input-group">
-                  <label>Your Detailed Message</label>
+                  <label>Message</label>
                   <textarea 
                     className="c-input" 
-                    style={{ height: '150px', resize: 'none' }} 
-                    placeholder="Tell us more about how we can help..."
+                    style={{ height: '140px', resize: 'none' }} 
+                    placeholder="Write your message here..."
                     value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                     required
@@ -298,14 +292,14 @@ const Contact = () => {
                   {loading ? (
                     <Loader2 className="animate-spin" />
                   ) : (
-                    <>SUBMIT TO THE BOARD <Send size={20} /></>
+                    <>SEND MESSAGE <Send size={20} /></>
                   )}
                 </button>
                 
-                <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>
-                  <Clock size={14} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} /> 
-                  Typical response time: Within 24 hours
-                </p>
+                <div className="trust-badge">
+                   <ShieldCheck size={18} />
+                   <span>Secure official communication channel</span>
+                </div>
               </form>
             )}
           </div>
