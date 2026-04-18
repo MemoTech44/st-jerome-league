@@ -10,6 +10,7 @@ const Navbar = () => {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
+    { name: 'Executive', path: '/executive' }, // Added League Executive Committee
     { name: 'News', path: '/news' },
     { name: 'Players', path: '/players' },
     { name: 'Fixtures', path: '/fixtures' },
@@ -120,7 +121,6 @@ const Navbar = () => {
             gap: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             z-index: 10000;
-            /* Animation starts here */
             animation: slideIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
           }
 
@@ -140,7 +140,7 @@ const Navbar = () => {
             border-bottom: 1px solid rgba(255,255,255,0.05);
           }
 
-          .nav-link-mobile:hover {
+          .nav-link-mobile:hover, .nav-link-mobile.active {
             background: rgba(250, 204, 21, 0.1);
             color: #facc15;
           }
@@ -182,7 +182,7 @@ const Navbar = () => {
           {isOpen ? <X size={32} /> : <Menu size={32} />}
         </button>
         
-        {/* MOBILE POP-OUT BOX - Now conditionally rendered to prevent duplicates */}
+        {/* MOBILE POP-OUT BOX */}
         {isOpen && (
           <div className="nav-links-mobile">
             {navItems.map((item) => (

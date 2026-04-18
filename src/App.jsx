@@ -10,8 +10,9 @@ import ScrollToTop from './components/ScrollToTop';
 // Page Components (Public)
 import Home from './pages/Home';
 import About from './pages/About';
+import Executive from './pages/Executive'; // New Import
 import News from './pages/News';
-import Players from './pages/Players'; // Added Import
+import Players from './pages/Players'; 
 import Fixtures from './pages/Fixtures';
 import Results from './pages/Results';
 import Table from './pages/Table';
@@ -25,6 +26,7 @@ import Dashboard from './admin/Dashboard';
 // A small helper component to handle Conditional Layouts
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
+  // Ensure the navbar/footer are hidden on admin and login pages
   const isAdminPath = location.pathname.startsWith('/admin') || location.pathname === '/login';
 
   return (
@@ -47,8 +49,9 @@ function App() {
           {/* PUBLIC ROUTES */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/executive" element={<Executive />} /> {/* New Route */}
           <Route path="/news" element={<News />} />
-          <Route path="/players" element={<Players />} /> {/* Added Route */}
+          <Route path="/players" element={<Players />} />
           <Route path="/fixtures" element={<Fixtures />} />
           <Route path="/results" element={<Results />} />
           <Route path="/table" element={<Table />} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Helmet } from 'react-helmet-async'; // SEO Import
 import { 
   Mail, Phone, MapPin, Send, Clock, 
   CheckCircle, Loader2, ShieldCheck, MessageSquare
@@ -37,6 +38,14 @@ const Contact = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Contact Us | St. Jerome League - Official Alumni Hub</title>
+        <meta name="description" content="Get in touch with the St. Jerome League board. Register your team, inquire about fixtures, or become a sponsor for the premier alumni league in Kampala." />
+        <meta property="og:title" content="Contact St. Jerome League | Get in The Arena" />
+        <meta property="og:description" content="Official communication channel for St. Jerome League inquiries and registration." />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
