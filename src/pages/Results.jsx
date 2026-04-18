@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { 
-  Calendar, 
   MapPin, 
-  Trophy, 
   Loader2, 
   AlertCircle,
+  Trophy,
   History
 } from 'lucide-react';
 
@@ -14,33 +13,34 @@ const Results = () => {
   const [results, setResults] = useState([]);
   const [teamLogos, setTeamLogos] = useState({});
   const [loading, setLoading] = useState(true);
-  const [selectedMatchday, setSelectedMatchday] = useState('All');
-  const [availableMatchdays, setAvailableMatchdays] = useState([]);
+  
+  const [selectedSeason, setSelectedSeason] = useState("Season 2");
+  const [selectedMatchday, setSelectedMatchday] = useState(1);
+
+  const seasons = ["Season 1", "Season 2", "Season 3", "Season 4", "Season 5"];
+  const matchdays = Array.from({ length: 12 }, (_, i) => i + 1);
 
   useEffect(() => {
     const fetchResultsData = async () => {
+      setLoading(true);
       try {
-        // 1. Fetch Team Logos
         const teamsSnapshot = await getDocs(collection(db, "clubs"));
         const logos = {};
         teamsSnapshot.docs.forEach(doc => {
-          const data = doc.data();
-          logos[data.name] = data.logo;
+          logos[doc.data().name] = doc.data().logo;
         });
         setTeamLogos(logos);
 
-        // 2. Fetch Results (Most recent matches first)
-        const q = query(collection(db, "results"), orderBy("date", "desc"));
+        const q = query(
+          collection(db, "fixtures"), 
+          where("status", "==", "completed"),
+          where("season", "==", selectedSeason),
+          where("matchday", "==", Number(selectedMatchday)),
+          orderBy("date", "desc")
+        );
+        
         const querySnapshot = await getDocs(q);
-        const matchResults = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
-        // Extract unique matchdays for the filter
-        const mdays = [...new Set(matchResults.map(m => m.matchday))].filter(Boolean).sort((a, b) => b - a);
-        setAvailableMatchdays(mdays);
-        setResults(matchResults);
+        setResults(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
         console.error("Error fetching results:", error);
       } finally {
@@ -49,197 +49,177 @@ const Results = () => {
     };
 
     fetchResultsData();
-  }, []);
-
-  const filteredResults = selectedMatchday === 'All' 
-    ? results 
-    : results.filter(m => m.matchday === selectedMatchday);
-
-  const groupedResults = filteredResults.reduce((acc, match) => {
-    const dateKey = match.date;
-    if (!acc[dateKey]) acc[dateKey] = [];
-    acc[dateKey].push(match);
-    return acc;
-  }, {});
-
-  if (loading) {
-    return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9' }}>
-        <Loader2 className="animate-spin" size={48} color="#1e40af" />
-        <p style={{ marginTop: '20px', fontWeight: 700, color: '#64748b', fontFamily: 'Plus Jakarta Sans' }}>Updating Scoreboards...</p>
-      </div>
-    );
-  }
+  }, [selectedSeason, selectedMatchday]);
 
   return (
     <div className="results-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
-        .results-page { background-color: #f1f5f9; padding: 140px 5% 100px; min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .container { max-width: 900px; margin: 0 auto; }
+        .results-page { 
+          background: #f8fafc; 
+          padding: 140px 5% 80px; 
+          min-height: 100vh; 
+          font-family: 'Plus Jakarta Sans', sans-serif; 
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
         
-        .results-header { margin-bottom: 50px; text-align: center; }
-        .results-title { font-family: 'Inter', sans-serif; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 900; letter-spacing: -2px; color: #0f172a; margin: 0; }
-        .accent-blue { color: #1e40af; }
-
-        /* Filter Tabs */
-        .filter-scroll-container { 
-          display: flex; gap: 10px; margin-bottom: 40px; overflow-x: auto; 
-          padding: 10px 5px; scrollbar-width: none; -ms-overflow-style: none;
-          justify-content: flex-start;
+        .header-box { text-align: center; margin-bottom: 40px; }
+        .header-box h1 { 
+          font-size: clamp(2.2rem, 5vw, 3rem); 
+          font-weight: 800; 
+          color: #1e3a8a; 
+          letter-spacing: -1px;
+          margin: 0;
         }
-        .filter-scroll-container::-webkit-scrollbar { display: none; }
+        .header-underline {
+          width: 50px;
+          height: 5px;
+          background: #facc15;
+          margin: 15px auto;
+          border-radius: 10px;
+        }
+
+        /* Filter System */
+        .filter-section { margin-bottom: 40px; }
         
-        .filter-btn { 
-          padding: 12px 24px; border-radius: 16px; border: none; background: white; 
-          font-weight: 800; color: #64748b; cursor: pointer; transition: 0.3s; 
-          font-size: 0.85rem; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-          border: 1px solid #e2e8f0;
+        .season-tabs { 
+          display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; 
+          background: #f1f5f9; padding: 6px; width: fit-content; margin: 0 auto 25px; border-radius: 16px;
         }
-        .filter-btn.active { background: #1e40af; color: white; border-color: #1e40af; box-shadow: 0 10px 20px rgba(30, 64, 175, 0.2); }
-
-        .date-section { margin-bottom: 50px; }
-        .date-header {
-          display: flex; align-items: center; gap: 10px; color: #1e40af; font-weight: 800;
-          font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;
-          background: #eff6ff; width: fit-content; padding: 10px 25px; border-radius: 50px;
+        .season-btn { 
+          padding: 10px 20px; border-radius: 12px; border: none; background: transparent; 
+          color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
         }
+        .season-btn.active { background: #1e3a8a; color: #facc15; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
 
-        /* Match Card Grid */
-        .match-card {
-          background: white; border-radius: 35px; padding: 35px; margin-bottom: 15px;
-          display: flex; align-items: center; justify-content: space-between;
-          border: 1px solid #e2e8f0; transition: 0.3s;
+        .md-scroll { 
+          display: flex; gap: 12px; overflow-x: auto; padding: 10px 5px 20px; 
+          scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent;
         }
-        .match-card:hover { border-color: #1e40af; transform: scale(1.01); }
+        .md-pill { 
+          padding: 12px 28px; border-radius: 14px; border: 1px solid #e2e8f0; background: white; 
+          color: #1e3a8a; font-weight: 800; cursor: pointer; white-space: nowrap; font-size: 0.85rem;
+          transition: 0.3s ease; flex-shrink: 0;
+        }
+        .md-pill:hover { border-color: #1e3a8a; }
+        .md-pill.active { background: #1e3a8a; color: #facc15; border-color: #1e3a8a; transform: translateY(-2px); }
 
-        .team-side { display: flex; align-items: center; gap: 20px; width: 35%; flex: 1; }
-        .team-home { justify-content: flex-end; text-align: right; }
-        .team-away { justify-content: flex-start; text-align: left; }
+        /* Result Cards */
+        .result-card { 
+          background: white; border-radius: 24px; padding: 30px; margin-bottom: 20px;
+          display: grid; grid-template-columns: 1.2fr 180px 1.2fr; align-items: center;
+          border: 1px solid #e2e8f0; transition: 0.3s ease;
+          box-shadow: 0 10px 30px -15px rgba(0,0,0,0.05);
+        }
+        .result-card:hover { transform: scale(1.01); border-color: #1e3a8a; }
+
+        .team-info { display: flex; align-items: center; gap: 20px; }
+        .team-info.home { justify-content: flex-end; text-align: right; }
+        .team-name { font-weight: 800; color: #1e293b; font-size: 1.1rem; letter-spacing: -0.3px; }
         
-        .team-name { font-weight: 800; font-size: 1.1rem; color: #0f172a; }
-        .team-logo-circle { 
-          width: 60px; height: 60px; min-width: 60px; border-radius: 20px; 
-          background: #f8fafc; border: 1px solid #f1f5f9; padding: 10px; 
+        .logo-box { 
+          width: 56px; height: 56px; background: #f8fafc; border-radius: 16px; 
+          padding: 8px; border: 1px solid #f1f5f9; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
         }
-        .team-logo-img { width: 100%; height: 100%; object-fit: contain; }
+        .logo-box img { width: 100%; height: 100%; object-fit: contain; }
 
-        .score-center { display: flex; flex-direction: column; align-items: center; min-width: 140px; }
-        .score-display {
-          background: #0f172a; padding: 12px 28px; border-radius: 20px;
-          font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900;
-          color: #facc15; display: flex; gap: 15px; align-items: center;
+        .score-center { text-align: center; }
+        .score-box { 
+          background: #1e3a8a; color: #facc15; font-size: 2.2rem; font-weight: 800; 
+          padding: 8px 24px; border-radius: 16px; display: inline-flex; gap: 12px;
+          align-items: center; line-height: 1;
         }
-        .score-divider { opacity: 0.2; color: white; font-size: 1.5rem; }
-
-        .venue-info { 
-          display: flex; align-items: center; gap: 6px; color: #94a3b8; 
-          font-size: 0.75rem; margin-top: 15px; font-weight: 700;
+        .score-box span { min-width: 25px; }
+        
+        .venue-tag { 
+          margin-top: 12px; font-size: 0.75rem; color: #64748b; font-weight: 700; 
+          display: flex; align-items: center; justify-content: center; gap: 4px;
         }
 
-        /* Responsive Breakpoint */
-        @media (max-width: 768px) {
-          .results-page { padding-top: 110px; }
-          .match-card { flex-direction: column; padding: 30px 20px; gap: 20px; }
-          .team-side { width: 100%; justify-content: center; text-align: center; }
-          .team-home { flex-direction: column-reverse; }
-          .team-away { flex-direction: column; }
-          .score-display { font-size: 1.8rem; padding: 10px 24px; }
-          .filter-scroll-container { justify-content: flex-start; padding-left: 0; }
+        @media (max-width: 850px) {
+          .result-card { grid-template-columns: 1fr; gap: 25px; padding: 40px 20px; }
+          .team-info.home { flex-direction: column-reverse; text-align: center; }
+          .team-info { flex-direction: column; text-align: center; }
+          .score-box { font-size: 1.8rem; }
         }
       `}</style>
 
       <div className="container">
-        <header className="results-header">
-          <h1 className="results-title">League <span className="accent-blue">Results.</span></h1>
-          <p style={{ color: '#64748b', fontWeight: 600, marginTop: '10px', fontSize: '1.1rem' }}>
-            Official scorelines from the current campaign.
-          </p>
+        <header className="header-box">
+          <h1>Match Archives</h1>
+          <div className="header-underline"></div>
+          <p style={{ color: '#64748b', fontWeight: 600 }}>Official results and scoring history</p>
         </header>
 
-        {/* HORIZONTAL FILTER */}
-        <div className="filter-scroll-container">
-          <button 
-            className={`filter-btn ${selectedMatchday === 'All' ? 'active' : ''}`}
-            onClick={() => setSelectedMatchday('All')}
-          >
-            All Results
-          </button>
-          {availableMatchdays.map(md => (
-            <button 
-              key={md}
-              className={`filter-btn ${selectedMatchday === md ? 'active' : ''}`}
-              onClick={() => setSelectedMatchday(md)}
-            >
-              Matchday {md}
-            </button>
-          ))}
+        <div className="filter-section">
+          <div className="season-tabs">
+            {seasons.map(s => (
+              <button 
+                key={s} 
+                className={`season-btn ${selectedSeason === s ? 'active' : ''}`}
+                onClick={() => setSelectedSeason(s)}
+              >
+                {s.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          <div className="md-scroll">
+            {matchdays.map(m => (
+              <button 
+                key={m} 
+                className={`md-pill ${selectedMatchday === m ? 'active' : ''}`}
+                onClick={() => setSelectedMatchday(m)}
+              >
+                MATCHDAY {m}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {results.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 20px', background: 'white', borderRadius: '40px', border: '1px solid #e2e8f0' }}>
-            <AlertCircle size={50} color="#cbd5e1" style={{ margin: '0 auto 20px' }} />
-            <h3 style={{fontWeight: 800, color: '#0f172a'}}>No Results Logged</h3>
-            <p style={{color: '#64748b', fontWeight: 600}}>Scores will appear once the final whistle blows.</p>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '100px' }}>
+            <Loader2 className="animate-spin" size={40} color="#1e3a8a" style={{margin: '0 auto'}}/>
+            <p style={{ marginTop: '15px', fontWeight: 700, color: '#64748b' }}>Fetching results...</p>
+          </div>
+        ) : results.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '80px 20px', background: 'white', borderRadius: '32px', border: '1px solid #e2e8f0' }}>
+            <History size={48} color="#cbd5e1" style={{ marginBottom: '20px' }} />
+            <h3 style={{ color: '#1e3a8a', fontWeight: 800, fontSize: '1.5rem', margin: '0 0 10px' }}>No Data Available</h3>
+            <p style={{ color: '#94a3b8', fontWeight: 600 }}>Records for {selectedSeason} Matchday {selectedMatchday} haven't been finalized.</p>
           </div>
         ) : (
-          Object.keys(groupedResults).map(date => (
-            <div key={date} className="date-section">
-              <div className="date-header">
-                <Calendar size={14} />
-                {date}
+          results.map((match) => (
+            <div key={match.id} className="result-card">
+              <div className="team-info home">
+                <span className="team-name">{match.homeTeam}</span>
+                <div className="logo-box">
+                  <img src={teamLogos[match.homeTeam] || '/placeholder.png'} alt={match.homeTeam} />
+                </div>
               </div>
 
-              {groupedResults[date].map((match) => (
-                <div key={match.id} className="match-card">
-                  {/* HOME TEAM */}
-                  <div className="team-side team-home">
-                    <div className="team-name">{match.homeTeam}</div>
-                    <div className="team-logo-circle">
-                      <img 
-                        src={teamLogos[match.homeTeam] || 'https://via.placeholder.com/60'} 
-                        className="team-logo-img" 
-                        alt="" 
-                      />
-                    </div>
-                  </div>
-
-                  {/* CENTER SCORE */}
-                  <div className="score-center">
-                    <div className="score-display">
-                      <span>{match.homeScore}</span>
-                      <span className="score-divider">|</span>
-                      <span>{match.awayScore}</span>
-                    </div>
-                    <div className="venue-info">
-                      <MapPin size={12} /> {match.venue || 'TBA'}
-                    </div>
-                  </div>
-
-                  {/* AWAY TEAM */}
-                  <div className="team-side team-away">
-                    <div className="team-logo-circle">
-                      <img 
-                        src={teamLogos[match.awayTeam] || 'https://via.placeholder.com/60'} 
-                        className="team-logo-img" 
-                        alt="" 
-                      />
-                    </div>
-                    <div className="team-name">{match.awayTeam}</div>
-                  </div>
+              <div className="score-center">
+                <div className="score-box">
+                  <span>{match.homeScore}</span>
+                  <span style={{ opacity: 0.2, fontSize: '1.2rem' }}>|</span>
+                  <span>{match.awayScore}</span>
                 </div>
-              ))}
+                <div className="venue-tag">
+                  <MapPin size={12} strokeWidth={3}/> {match.venue || "Arena"}
+                </div>
+              </div>
+
+              <div className="team-info">
+                <div className="logo-box">
+                  <img src={teamLogos[match.awayTeam] || '/placeholder.png'} alt={match.awayTeam} />
+                </div>
+                <span className="team-name">{match.awayTeam}</span>
+              </div>
             </div>
           ))
         )}
-
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 700 }}>
-            <History size={14} /> SEASON 2026 ARCHIVE
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db, storage } from '../firebase';
 import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { UserPlus, Upload, Loader2, ShieldCheck, Camera } from 'lucide-react';
+import { UserPlus, Upload, Loader2, ShieldCheck, Camera, CheckCircle2 } from 'lucide-react';
 
 const PlayerRegistration = () => {
   const [teams, setTeams] = useState([]);
@@ -23,7 +23,10 @@ const PlayerRegistration = () => {
     const fetchTeams = async () => {
       try {
         const snap = await getDocs(collection(db, "clubs"));
-        setTeams(snap.docs.map(doc => ({ id: doc.id, name: doc.data().name })));
+        const sortedTeams = snap.docs
+          .map(doc => ({ id: doc.id, name: doc.data().name }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setTeams(sortedTeams);
       } catch (error) {
         console.error("Error fetching teams:", error);
       }
@@ -60,11 +63,13 @@ const PlayerRegistration = () => {
     <div style={pageWrapper}>
       <div style={successCard}>
         <div style={iconCircle}>
-          <ShieldCheck size={40} color="#1e40af" />
+          <CheckCircle2 size={45} color="#1e40af" />
         </div>
-        <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#1e40af', marginBottom: '10px' }}>SUCCESS!</h2>
-        <p style={{ color: '#64748b', fontWeight: 600 }}>Your registration is pending verification.</p>
-        <button onClick={() => window.location.reload()} style={btnStyle}>REGISTER ANOTHER</button>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#1e40af', marginBottom: '10px', letterSpacing: '-1px' }}>APPLICATION SENT!</h2>
+        <p style={{ color: '#64748b', fontWeight: 600, lineHeight: 1.5, marginBottom: '25px' }}>
+          Your profile has been submitted for review. You will be notified once verified.
+        </p>
+        <button onClick={() => window.location.reload()} style={btnStyle}>REGISTER ANOTHER PLAYER</button>
       </div>
     </div>
   );
@@ -72,39 +77,56 @@ const PlayerRegistration = () => {
   return (
     <div style={pageWrapper}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
         .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        input:focus, select:focus { outline: none; border-color: #1e40af !important; box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); }
+        
+        input:focus, select:focus, textarea:focus { 
+          outline: none; 
+          border-color: #1e40af !important; 
+          background: white !important;
+          box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.08); 
+        }
+
+        .upload-area:hover {
+          border-color: #1e40af;
+          background: #eff6ff;
+        }
       `}</style>
 
       <div style={containerStyle}>
-        <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '35px' }}>
           <div style={badgeIcon}>
             <UserPlus size={24} color="#1e40af" />
           </div>
-          <h1 style={headerStyle}>Player Registration</h1>
-          <p style={subHeaderStyle}>Join the St. Jerome League Season 2026/2027</p>
+          <h1 style={headerStyle}>Join the League</h1>
+          <p style={subHeaderStyle}>Player Registration • Season 2026/2027</p>
         </div>
 
         <form onSubmit={handleSubmit} style={formCardStyle}>
           <div style={inputGroup}>
-            <label style={labelStyle}>FULL NAME</label>
-            <input style={inputStyle} type="text" placeholder="Enter official name" required onChange={e => setFormData({...formData, name: e.target.value})} />
+            <label style={labelStyle}>FULL LEGAL NAME</label>
+            <input 
+              style={inputStyle} 
+              type="text" 
+              placeholder="As it appears on ID" 
+              required 
+              onChange={e => setFormData({...formData, name: e.target.value})} 
+            />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
             <div style={inputGroup}>
-              <label style={labelStyle}>SELECT CLUB</label>
+              <label style={labelStyle}>ASSIGNED CLUB</label>
               <select style={inputStyle} required onChange={e => setFormData({...formData, team: e.target.value})}>
-                <option value="">Choose...</option>
+                <option value="">Select Team</option>
                 {teams.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
               </select>
             </div>
             <div style={inputGroup}>
-              <label style={labelStyle}>FIELD POSITION</label>
+              <label style={labelStyle}>PRIMARY POSITION</label>
               <select style={inputStyle} required onChange={e => setFormData({...formData, position: e.target.value})}>
-                <option value="">Select...</option>
+                <option value="">Position</option>
                 <option value="Goalkeeper">Goalkeeper</option>
                 <option value="Defender">Defender</option>
                 <option value="Midfielder">Midfielder</option>
@@ -115,27 +137,48 @@ const PlayerRegistration = () => {
 
           <div style={inputGroup}>
             <label style={labelStyle}>EMAIL ADDRESS</label>
-            <input style={inputStyle} type="email" placeholder="example@gmail.com" required onChange={e => setFormData({...formData, email: e.target.value})} />
+            <input 
+              style={inputStyle} 
+              type="email" 
+              placeholder="personal@email.com" 
+              required 
+              onChange={e => setFormData({...formData, email: e.target.value})} 
+            />
           </div>
 
           <div style={inputGroup}>
-            <label style={labelStyle}>WHATSAPP / CONTACT</label>
-            <input style={inputStyle} type="tel" required placeholder="07... / 01..." onChange={e => setFormData({...formData, contact: e.target.value})} />
+            <label style={labelStyle}>CONTACT / WHATSAPP NUMBER</label>
+            <input 
+              style={inputStyle} 
+              type="tel" 
+              required 
+              placeholder="e.g. 0700 000 000" 
+              onChange={e => setFormData({...formData, contact: e.target.value})} 
+            />
           </div>
 
-          <div style={{ marginBottom: '25px' }}>
-            <label style={labelStyle}>PASSPORT PHOTO</label>
-            <div onClick={() => document.getElementById('pPhoto').click()} style={{...uploadStyle, borderColor: photo ? '#1e40af' : '#cbd5e1'}}>
-              {photo ? <ShieldCheck color="#1e40af" size={20} /> : <Camera size={20} />}
-              <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>
-                {photo ? photo.name : "Click to select passport photo"}
+          <div style={{ marginBottom: '30px' }}>
+            <label style={labelStyle}>IDENTITY PHOTO (PASSPORT SIZE)</label>
+            <div 
+              className="upload-area"
+              onClick={() => document.getElementById('pPhoto').click()} 
+              style={{...uploadStyle, borderColor: photo ? '#1e40af' : '#e2e8f0', background: photo ? '#f0f9ff' : '#f8fafc'}}
+            >
+              {photo ? <ShieldCheck color="#1e40af" size={22} /> : <Camera size={22} color="#94a3b8" />}
+              <span style={{ fontWeight: 700, fontSize: '0.85rem', color: photo ? '#1e40af' : '#64748b' }}>
+                {photo ? photo.name : "Tap to upload photo"}
               </span>
               <input id="pPhoto" type="file" hidden accept="image/*" required onChange={e => setPhoto(e.target.files[0])} />
             </div>
           </div>
 
           <button type="submit" disabled={loading} style={btnStyle}>
-            {loading ? <Loader2 className="animate-spin" style={{ margin: '0 auto' }} /> : "COMPLETE REGISTRATION"}
+            {loading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                <Loader2 className="animate-spin" size={20} />
+                <span>PROCESSING...</span>
+              </div>
+            ) : "SUBMIT REGISTRATION"}
           </button>
         </form>
       </div>
@@ -143,125 +186,128 @@ const PlayerRegistration = () => {
   );
 };
 
-// Adjusted Styles
+// Styles
 const pageWrapper = {
   minHeight: '100vh',
-  background: '#f1f5f9',
-  padding: '20px', 
+  background: '#f8fafc',
+  padding: '140px 20px 60px', 
   fontFamily: "'Plus Jakarta Sans', sans-serif",
   boxSizing: 'border-box'
 };
 
 const containerStyle = {
-  maxWidth: '500px',
-  margin: '100px auto 40px', // Pushed lower (100px from top) to avoid Navbar
+  maxWidth: '480px',
+  margin: '0 auto',
 };
 
 const badgeIcon = {
   background: '#facc15',
-  width: '50px', // Slightly smaller
-  height: '50px', // Slightly smaller
-  borderRadius: '15px',
+  width: '56px',
+  height: '56px',
+  borderRadius: '18px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  margin: '0 auto 12px',
-  boxShadow: '0 4px 10px rgba(250, 204, 21, 0.25)'
+  margin: '0 auto 16px',
+  boxShadow: '0 8px 16px -4px rgba(250, 204, 21, 0.4)'
 };
 
 const headerStyle = {
-  fontSize: '1.75rem', // Slightly smaller
+  fontSize: '2rem',
   fontWeight: 800,
-  color: '#1e40af',
-  letterSpacing: '-0.5px',
+  color: '#1e3a8a',
+  letterSpacing: '-1px',
   margin: '0'
 };
 
 const subHeaderStyle = {
-  color: '#64748b',
-  fontWeight: 600,
+  color: '#94a3b8',
+  fontWeight: 700,
   fontSize: '0.9rem',
-  marginTop: '4px'
+  marginTop: '6px',
+  textTransform: 'uppercase',
+  letterSpacing: '1px'
 };
 
 const formCardStyle = {
   background: 'white',
-  padding: '30px', // Tighter padding
-  borderRadius: '20px',
-  boxShadow: '0 15px 30px -5px rgba(0,0,0,0.05)',
+  padding: '35px',
+  borderRadius: '32px',
+  boxShadow: '0 20px 40px -12px rgba(0,0,0,0.05)',
   border: '1px solid #e2e8f0'
 };
 
-const inputGroup = { marginBottom: '15px' };
+const inputGroup = { marginBottom: '20px' };
 
 const labelStyle = {
   display: 'block',
   fontWeight: 800,
   fontSize: '0.65rem',
-  color: '#1e40af',
-  letterSpacing: '1px',
-  marginBottom: '6px'
+  color: '#1e3a8a',
+  letterSpacing: '1.2px',
+  marginBottom: '8px'
 };
 
 const inputStyle = {
   width: '100%',
-  padding: '12px 14px',
+  padding: '14px 16px',
   border: '2px solid #f1f5f9',
-  borderRadius: '10px',
+  borderRadius: '14px',
   background: '#f8fafc',
   fontWeight: 600,
-  fontSize: '0.85rem',
+  fontSize: '0.95rem',
+  color: '#1e293b',
   transition: 'all 0.2s ease',
   boxSizing: 'border-box'
 };
 
 const uploadStyle = {
   border: '2px dashed',
-  padding: '15px',
-  borderRadius: '10px',
+  padding: '20px',
+  borderRadius: '14px',
   textAlign: 'center',
   cursor: 'pointer',
-  background: '#f8fafc',
-  color: '#64748b',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '10px',
-  transition: '0.2s'
+  gap: '12px',
+  transition: 'all 0.3s ease'
 };
 
 const btnStyle = {
   width: '100%',
-  background: '#1e40af',
+  background: '#1e3a8a',
   color: '#facc15',
-  padding: '14px',
+  padding: '18px',
   border: 'none',
-  borderRadius: '10px',
+  borderRadius: '16px',
   fontWeight: 800,
-  fontSize: '0.9rem',
+  fontSize: '1rem',
   cursor: 'pointer',
-  boxShadow: '0 8px 12px -3px rgba(30, 64, 175, 0.25)'
+  boxShadow: '0 10px 20px -5px rgba(30, 58, 138, 0.3)',
+  transition: 'transform 0.2s ease'
 };
 
 const successCard = {
   background: 'white',
-  maxWidth: '350px',
-  margin: '120px auto',
-  padding: '40px 25px',
-  borderRadius: '24px',
+  maxWidth: '400px',
+  margin: '0 auto',
+  padding: '50px 35px',
+  borderRadius: '40px',
   textAlign: 'center',
-  boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)'
+  boxShadow: '0 30px 60px -15px rgba(0,0,0,0.1)',
+  border: '1px solid #e2e8f0'
 };
 
 const iconCircle = {
-  width: '70px',
-  height: '70px',
-  background: 'rgba(30, 64, 175, 0.1)',
+  width: '80px',
+  height: '80px',
+  background: '#eff6ff',
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  margin: '0 auto 15px'
+  margin: '0 auto 20px'
 };
 
 export default PlayerRegistration;

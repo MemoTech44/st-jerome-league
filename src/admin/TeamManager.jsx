@@ -10,7 +10,7 @@ import {
   updateDoc 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Trash2, Shield, Plus, Loader2, UploadCloud, Edit3, X, Eye } from 'lucide-react';
+import { Trash2, Shield, Plus, Loader2, UploadCloud, Edit3, X, Info, UserCheck, Briefcase, Flag, Wallet, Star } from 'lucide-react';
 
 const TeamManager = () => {
   const [teams, setTeams] = useState([]);
@@ -18,10 +18,16 @@ const TeamManager = () => {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   
-  // Form State
+  // Form State (Aligned with About Page Modal)
   const [teamName, setTeamName] = useState('');
   const [logo, setLogo] = useState(null);
   const [existingLogoUrl, setExistingLogoUrl] = useState('');
+  const [chairman, setChairman] = useState('');
+  const [coach, setCoach] = useState('');
+  const [captain, setCaptain] = useState('');
+  const [treasurer, setTreasurer] = useState('');
+  const [rep, setRep] = useState('');
+  const [description, setDescription] = useState('');
 
   useEffect(() => {
     fetchTeams();
@@ -35,8 +41,14 @@ const TeamManager = () => {
 
   const handleEditClick = (team) => {
     setEditingId(team.id);
-    setTeamName(team.name);
+    setTeamName(team.name || '');
     setExistingLogoUrl(team.logoUrl || '');
+    setChairman(team.chairman || '');
+    setCoach(team.coach || '');
+    setCaptain(team.captain || '');
+    setTreasurer(team.treasurer || '');
+    setRep(team.rep || '');
+    setDescription(team.description || '');
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -46,6 +58,12 @@ const TeamManager = () => {
     setLogo(null);
     setEditingId(null);
     setExistingLogoUrl('');
+    setChairman('');
+    setCoach('');
+    setCaptain('');
+    setTreasurer('');
+    setRep('');
+    setDescription('');
     setIsAdding(false);
   };
 
@@ -62,37 +80,41 @@ const TeamManager = () => {
         logoUrl = await getDownloadURL(logoRef);
       }
 
+      const teamPayload = {
+        name: teamName,
+        logoUrl,
+        chairman,
+        coach,
+        captain,
+        treasurer,
+        rep,
+        description,
+        updatedAt: serverTimestamp()
+      };
+
       if (editingId) {
-        // UPDATE
-        await updateDoc(doc(db, "clubs", editingId), {
-          name: teamName,
-          logoUrl,
-        });
-        alert("Team updated successfully!");
+        await updateDoc(doc(db, "clubs", editingId), teamPayload);
       } else {
-        // CREATE NEW
         await addDoc(collection(db, "clubs"), {
-          name: teamName,
-          logoUrl,
+          ...teamPayload,
           played: 0, won: 0, drawn: 0, lost: 0,
           gf: 0, ga: 0, gd: 0, pts: 0,
           createdAt: serverTimestamp(),
         });
-        alert("Team registered!");
       }
 
       resetForm();
       fetchTeams();
     } catch (error) {
       console.error("Error saving team:", error);
-      alert("Failed to save team.");
+      alert("Failed to save team details.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Deleting this team will affect the league table. Proceed?")) {
+    if (window.confirm("Deleting this team will remove all their data and stats. Proceed?")) {
       try {
         await deleteDoc(doc(db, "clubs", id));
         fetchTeams();
@@ -105,58 +127,109 @@ const TeamManager = () => {
   return (
     <div className="team-manager" style={{ color: '#0f172a' }}>
       <style>{`
-        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-top: 20px; }
-        .team-admin-card { background: white; padding: 20px; border-radius: 12px; border: 2px solid #f1f5f9; text-align: center; position: relative; transition: 0.3s; }
-        .team-admin-card:hover { border-color: #facc15; transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .team-admin-card img { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; }
-        .add-team-form { background: #ffffff; padding: 30px; border-radius: 12px; border: 2px solid #1e40af; margin-bottom: 30px; }
-        .input-style { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #f1f5f9; border-radius: 8px; font-family: inherit; background: #f8fafc; font-weight: 600; }
-        .input-style:focus { border-color: #facc15; outline: none; }
-        .upload-area { border: 2px dashed #cbd5e1; padding: 20px; border-radius: 8px; text-align: center; cursor: pointer; margin-bottom: 15px; background: #f8fafc; }
-        .stats-badge { background: #1e40af; color: white; padding: 4px 10px; borderRadius: 20px; font-size: 0.65rem; font-weight: 800; margin: 2px; display: inline-block; }
-        .action-overlay { display: flex; gap: 5px; position: absolute; top: 10px; right: 10px; }
-        .mini-btn { padding: 6px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+        .team-admin-card { background: white; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; text-align: center; position: relative; transition: 0.3s ease; }
+        .team-admin-card:hover { border-color: #1e40af; transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.05); }
+        .team-admin-card img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px; }
+        
+        .add-team-form { background: #ffffff; padding: 40px; border-radius: 30px; border: 2px solid #1e40af; margin-bottom: 40px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .input-group label { font-weight: 800; font-size: 0.7rem; color: #1e40af; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .input-style { width: 100%; padding: 14px; border: 2px solid #f1f5f9; border-radius: 12px; font-family: inherit; background: #f8fafc; font-weight: 600; transition: 0.2s; }
+        .input-style:focus { border-color: #facc15; outline: none; background: white; }
+        
+        .upload-area { border: 2px dashed #cbd5e1; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; background: #f8fafc; transition: 0.2s; }
+        .upload-area:hover { border-color: #1e40af; background: #eff6ff; }
+        
+        .action-overlay { display: flex; gap: 8px; position: absolute; top: 15px; right: 15px; }
+        .mini-btn { width: 35px; height: 35px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        
+        @media (max-width: 700px) { .form-row { grid-template-columns: 1fr; } }
       `}</style>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
-        <h3 style={{ fontFamily: 'Archivo', textTransform: 'uppercase', margin: 0, color: '#1e40af' }}>League Clubs</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', alignItems: 'center' }}>
+        <div>
+          <h2 style={{ margin: 0, color: '#1e40af', fontWeight: 900, fontSize: '1.8rem' }}>CLUB ROSTER</h2>
+          <p style={{ margin: 0, color: '#64748b', fontWeight: 600 }}>Manage member profiles and credentials</p>
+        </div>
         <button 
           onClick={() => isAdding ? resetForm() : setIsAdding(true)}
-          style={{ background: isAdding ? '#ef4444' : '#facc15', color: isAdding ? 'white' : '#0f172a', border: 'none', padding: '12px 24px', borderRadius: '8px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+          style={{ background: isAdding ? '#ef4444' : '#facc15', color: isAdding ? 'white' : '#0f172a', border: 'none', padding: '14px 28px', borderRadius: '14px', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
         >
-          {isAdding ? <><X size={18} /> Cancel</> : <><Plus size={18} /> Add New Club</>}
+          {isAdding ? <><X size={20} /> Cancel</> : <><Plus size={20} /> Register New Club</>}
         </button>
       </div>
 
       {isAdding && (
         <form className="add-team-form" onSubmit={handleSaveTeam}>
-          <h4 style={{ margin: '0 0 15px 0', color: '#1e40af' }}>{editingId ? 'EDIT CLUB DETAILS' : 'REGISTER NEW CLUB'}</h4>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
+            <div style={{ background: '#1e40af', padding: '8px', borderRadius: '10px' }}><Shield color="white" size={24} /></div>
+            <h3 style={{ margin: 0, color: '#1e40af', fontWeight: 900 }}>{editingId ? 'UPDATE CLUB PROFILE' : 'NEW CLUB REGISTRATION'}</h3>
+          </div>
           
-          <label style={{fontWeight: 800, fontSize: '0.75rem', color: '#1e40af', textTransform: 'uppercase'}}>Club Name</label>
-          <input 
-            className="input-style"
-            type="text" 
-            placeholder="e.g. Kampala City FC" 
-            value={teamName} 
-            onChange={(e) => setTeamName(e.target.value)} 
-            required 
-          />
-          
-          <label style={{fontWeight: 800, fontSize: '0.75rem', color: '#1e40af', textTransform: 'uppercase', display: 'block', marginBottom: '10px'}}>Club Crest / Logo</label>
-          <div className="upload-area" onClick={() => document.getElementById('logoInput').click()}>
-            <UploadCloud size={32} color="#1e40af" style={{marginBottom: '5px'}} />
-            <p style={{margin: 0, fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>
-              {logo ? logo.name : existingLogoUrl ? "Click to change current logo" : "Upload PNG/JPG Logo"}
-            </p>
-            <input id="logoInput" type="file" hidden accept="image/*" onChange={(e) => setLogo(e.target.files[0])} />
+          <div className="form-row">
+            <div className="input-group">
+              <label>Official Club Name</label>
+              <input className="input-style" type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="e.g. Ndama Veterans FC" required />
+            </div>
+            <div className="input-group">
+              <label>Club Crest / Logo</label>
+              <div className="upload-area" onClick={() => document.getElementById('logoInput').click()}>
+                <p style={{margin: 0, fontSize: '0.85rem', color: '#1e40af', fontWeight: 700 }}>
+                  {logo ? logo.name : existingLogoUrl ? "Change Current Logo" : "Upload High-Res Logo"}
+                </p>
+                <input id="logoInput" type="file" hidden accept="image/*" onChange={(e) => setLogo(e.target.files[0])} />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ margin: '20px 0', padding: '20px', background: '#f1f5f9', borderRadius: '20px' }}>
+            <p style={{ margin: '0 0 15px 0', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase' }}>Leadership & Roles (Pop-up Data)</p>
+            <div className="form-row">
+              <div className="input-group">
+                <label>Chairman</label>
+                <input className="input-style" type="text" value={chairman} onChange={(e) => setChairman(e.target.value)} placeholder="Full Name" />
+              </div>
+              <div className="input-group">
+                <label>Head Coach</label>
+                <input className="input-style" type="text" value={coach} onChange={(e) => setCoach(e.target.value)} placeholder="Full Name" />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="input-group">
+                <label>Club Captain</label>
+                <input className="input-style" type="text" value={captain} onChange={(e) => setCaptain(e.target.value)} placeholder="Full Name" />
+              </div>
+              <div className="input-group">
+                <label>Treasurer</label>
+                <input className="input-style" type="text" value={treasurer} onChange={(e) => setTreasurer(e.target.value)} placeholder="Full Name" />
+              </div>
+            </div>
+            <div className="input-group">
+              <label>Executive Representative</label>
+              <input className="input-style" type="text" value={rep} onChange={(e) => setRep(e.target.value)} placeholder="League Executive Member Name" />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label>Club Biography / Description</label>
+            <textarea 
+              className="input-style" 
+              style={{ minHeight: '100px', resize: 'vertical' }}
+              value={description} 
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Tell the story of this club, its year group, and achievements..."
+            />
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            style={{ width: '100%', background: '#1e40af', color: 'white', padding: '15px', border: 'none', borderRadius: '8px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase' }}
+            style={{ width: '100%', background: '#1e40af', color: 'white', padding: '20px', border: 'none', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', fontSize: '1rem', marginTop: '10px' }}
           >
-            {loading ? <Loader2 className="animate-spin" style={{margin: '0 auto'}} /> : editingId ? "Save Changes" : "Register Club"}
+            {loading ? <Loader2 className="animate-spin" style={{margin: '0 auto'}} /> : editingId ? "Save Profile Changes" : "Confirm Registration"}
           </button>
         </form>
       )}
@@ -166,31 +239,26 @@ const TeamManager = () => {
           <div key={team.id} className="team-admin-card">
             <div className="action-overlay">
               <button className="mini-btn" style={{ background: '#eff6ff', color: '#1e40af' }} onClick={() => handleEditClick(team)}>
-                <Edit3 size={16} />
+                <Edit3 size={18} />
               </button>
               <button className="mini-btn" style={{ background: '#fee2e2', color: '#ef4444' }} onClick={() => handleDelete(team.id)}>
-                <Trash2 size={16} />
+                <Trash2 size={18} />
               </button>
             </div>
 
             {team.logoUrl ? (
               <img src={team.logoUrl} alt={team.name} />
             ) : (
-              <div style={{ padding: '15px' }}><Shield size={50} color="#cbd5e1" /></div>
+              <div style={{ padding: '20px' }}><Shield size={60} color="#cbd5e1" /></div>
             )}
             
-            <h4 style={{ fontFamily: 'Archivo', textTransform: 'uppercase', margin: '0 0 10px 0', fontSize: '1.1rem' }}>{team.name}</h4>
+            <h4 style={{ margin: '0 0 5px 0', fontSize: '1.2rem', fontWeight: 800 }}>{team.name}</h4>
+            <p style={{ margin: '0 0 15px 0', fontSize: '0.75rem', color: '#64748b', fontWeight: 700 }}>{team.captain || 'No Captain Assigned'}</p>
             
-            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
-              <div className="stats-badge">P: {team.played}</div>
-              <div className="stats-badge">W: {team.won}</div>
-              <div className="stats-badge" style={{ background: '#facc15', color: '#0f172a' }}>PTS: {team.pts}</div>
-              <div className="stats-badge">GD: {team.gd}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: 800 }}>PTS: {team.pts}</div>
+              <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '10px', fontSize: '0.65rem', fontWeight: 800 }}>GD: {team.gd}</div>
             </div>
-            
-            <p style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: '10px', fontWeight: 700 }}>
-              Auto-updating via Match Results
-            </p>
           </div>
         ))}
       </div>
