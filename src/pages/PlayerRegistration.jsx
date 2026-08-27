@@ -104,10 +104,15 @@ const PlayerRegistration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.name.trim()) return alert("Please enter your full name");
     if (!formData.team) return alert("Please select a team");
+    if (!formData.teamNumber.trim()) return alert("Please enter your team number");
     if (!formData.position) return alert("Please select a playing position");
     if (!formData.sex) return alert("Please select sex");
+    if (!formData.studyPeriod.trim()) return alert("Please enter your period of study");
+    if (!formData.contact.trim()) return alert("Please enter your contact or WhatsApp number");
     if (!photo) return alert("Please upload your current passport photo");
+    
     setLoading(true);
 
     try {
@@ -425,7 +430,7 @@ const PlayerRegistration = () => {
             <form onSubmit={handleSubmit} className="form-card">
               {/* Name in Full */}
               <div className="input-group">
-                <label>Name in Full</label>
+                <label>Name in Full *</label>
                 <input 
                   className="r-input"
                   type="text" 
@@ -439,7 +444,7 @@ const PlayerRegistration = () => {
               {/* Team and Team Number */}
               <div className="grid-2">
                 <CustomSelect 
-                  label="Team"
+                  label="Team *"
                   value={formData.team}
                   options={teams.map(t => ({ value: t.name, label: t.name }))}
                   onChange={val => setFormData({...formData, team: val})}
@@ -447,10 +452,10 @@ const PlayerRegistration = () => {
                 />
 
                 <div className="input-group">
-                  <label>Team Number</label>
+                  <label>Team Number *</label>
                   <input 
                     className="r-input"
-                    type="number" 
+                    type="text" 
                     placeholder="e.g. NAT001" 
                     required 
                     value={formData.teamNumber}
@@ -462,7 +467,7 @@ const PlayerRegistration = () => {
               {/* Position and Sex */}
               <div className="grid-2">
                 <CustomSelect 
-                  label="Position"
+                  label="Position *"
                   value={formData.position}
                   options={[
                     { value: 'Goalkeeper', label: 'Goalkeeper' },
@@ -475,7 +480,7 @@ const PlayerRegistration = () => {
                 />
 
                 <CustomSelect 
-                  label="Sex"
+                  label="Sex *"
                   value={formData.sex}
                   options={[
                     { value: 'Male', label: 'Male' },
@@ -488,7 +493,7 @@ const PlayerRegistration = () => {
 
               {/* Period of Study */}
               <div className="input-group">
-                <label>Period of Study (years) at St. Jerome</label>
+                <label>Period of Study (years) at St. Jerome *</label>
                 <input 
                   className="r-input"
                   type="text" 
@@ -501,7 +506,7 @@ const PlayerRegistration = () => {
 
               {/* Contact */}
               <div className="input-group">
-                <label>Contact / WhatsApp Number</label>
+                <label>Contact / WhatsApp Number *</label>
                 <input 
                   className="r-input"
                   type="tel" 
@@ -514,7 +519,7 @@ const PlayerRegistration = () => {
 
               {/* Passport Photo Upload */}
               <div className="input-group" style={{ marginBottom: '28px' }}>
-                <label>Current Photo (Passport Size)</label>
+                <label>Current Photo (Passport Size) *</label>
                 <div 
                   className={`upload-area ${photo ? 'has-file' : ''}`}
                   onClick={() => document.getElementById('pPhoto').click()} 
