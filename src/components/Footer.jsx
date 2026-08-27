@@ -1,5 +1,5 @@
 import React from 'react';
-import * as Icons from 'lucide-react'; // Import everything as an object to avoid export errors
+import * as Icons from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -8,12 +8,14 @@ const Footer = () => {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
         .league-footer {
-          background-color: #1e40af; 
-          border-top: 6px solid #facc15;
+          background-color: #04060d; 
+          border-top: 1px solid rgba(250, 204, 21, 0.3);
           padding: 60px 5% 30px;
           font-family: 'Plus Jakarta Sans', sans-serif;
-          color: white;
+          color: #f8fafc;
           width: 100%;
           box-sizing: border-box;
           display: flex;
@@ -38,34 +40,37 @@ const Footer = () => {
         .footer-brand {
           display: flex;
           flex-direction: column;
-          gap: 15px;
+          gap: 12px;
         }
 
         .footer-brand h2 {
-          font-size: 1.8rem;
-          font-weight: 900;
+          font-family: 'Bebas Neue', cursive;
+          font-size: 2.2rem;
           margin: 0;
-          letter-spacing: -1px;
+          letter-spacing: 1.5px;
           display: flex;
-          gap: 8px;
+          gap: 6px;
           flex-wrap: wrap;
+          line-height: 1;
         }
 
         .footer-accent { color: #facc15; }
 
         .footer-motto {
+          font-family: 'Cinzel', serif;
           color: #facc15;
-          font-size: 0.8rem;
-          font-weight: 800;
+          font-size: 0.75rem;
+          font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 2px;
         }
 
         .footer-desc {
-          color: rgba(255, 255, 255, 0.8);
-          font-size: 0.95rem;
+          color: #94a3b8;
+          font-size: 0.9rem;
           line-height: 1.7;
           max-width: 400px;
+          margin: 4px 0 0 0;
         }
 
         .footer-section {
@@ -74,12 +79,12 @@ const Footer = () => {
         }
 
         .footer-heading {
-          font-size: 0.9rem;
-          font-weight: 900;
-          text-transform: uppercase;
+          font-family: 'Bebas Neue', cursive;
+          font-size: 1.4rem;
           letter-spacing: 1.5px;
-          margin-bottom: 25px;
+          margin: 0 0 20px 0;
           color: #facc15;
+          text-transform: uppercase;
         }
 
         .footer-links {
@@ -88,57 +93,57 @@ const Footer = () => {
           margin: 0;
           display: flex;
           flex-direction: column;
-          gap: 15px;
+          gap: 12px;
         }
 
         .footer-link {
-          color: rgba(255, 255, 255, 0.7);
+          color: #94a3b8;
           text-decoration: none;
-          font-size: 0.9rem;
-          font-weight: 600;
-          transition: 0.3s ease;
+          font-size: 0.88rem;
+          font-weight: 500;
+          transition: all 0.25s ease;
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
         }
 
         .footer-link:hover {
           color: #facc15;
-          transform: translateX(5px);
+          transform: translateX(4px);
         }
 
         .footer-socials {
           display: flex;
-          gap: 15px;
+          gap: 12px;
           margin-top: 10px;
         }
 
         .social-circle {
-          width: 42px;
-          height: 42px;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.08);
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: rgba(15, 23, 42, 0.6);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
-          transition: all 0.3s ease;
+          color: #cbd5e1;
+          transition: all 0.25s ease;
           text-decoration: none;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .social-circle:hover {
-          background: #facc15;
-          color: #1e40af;
-          transform: translateY(-5px);
-          border-color: #facc15;
-          box-shadow: 0 5px 15px rgba(250, 204, 21, 0.3);
+          background: #1e40af;
+          color: #facc15;
+          transform: translateY(-3px);
+          border-color: rgba(250, 204, 21, 0.4);
+          box-shadow: 0 5px 15px rgba(30, 64, 175, 0.4);
         }
 
         .footer-bottom {
           width: 100%;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-          padding-top: 30px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          padding-top: 24px;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -146,18 +151,18 @@ const Footer = () => {
         }
 
         .copyright {
-          font-size: 0.8rem;
+          font-size: 0.75rem;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.4);
+          color: #64748b;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 1px;
         }
 
         @media (max-width: 900px) {
           .footer-grid {
             grid-template-columns: 1fr;
             text-align: center;
-            gap: 50px;
+            gap: 40px;
           }
           .footer-brand, .footer-section {
             align-items: center;
@@ -167,7 +172,7 @@ const Footer = () => {
           .footer-desc { max-width: 100%; }
           .footer-link { justify-content: center; }
           .footer-socials { justify-content: center; }
-          .footer-bottom { flex-direction: column; text-align: center; }
+          .footer-bottom { flex-direction: column; text-align: center; gap: 10px; }
         }
       `}</style>
 
@@ -186,12 +191,6 @@ const Footer = () => {
                 Building a legacy of excellence and faith through the power of sport. 
                 Uganda's premier platform for the next generation of champions.
               </p>
-              <div className="footer-socials">
-                <a href="#" className="social-circle"><Icons.MessageCircle size={20} /></a>
-                <a href="#" className="social-circle"><Icons.Music2 size={20} /></a>
-                <a href="#" className="social-circle"><Icons.Send size={20} /></a>
-                <a href="#" className="social-circle"><Icons.Trophy size={20} /></a>
-              </div>
             </div>
 
             <div className="footer-section">
@@ -209,15 +208,10 @@ const Footer = () => {
               <h4 className="footer-heading">Contact Info</h4>
               <ul className="footer-links">
                 <li className="footer-link">
-                  <Icons.MapPin size={18} className="footer-accent" /> Kampala, Uganda
+                  <Icons.MapPin size={16} className="footer-accent" /> Kampala, Uganda
                 </li>
                 <li className="footer-link">
-                  <Icons.Mail size={18} className="footer-accent" /> info@stjeromeleague.com
-                </li>
-                <li>
-                  <a href="https://stjeromeleague.com" className="footer-link">
-                    <Icons.Globe size={18} className="footer-accent" /> Visit Official Site
-                  </a>
+                  <Icons.Mail size={16} className="footer-accent" /> stjeromeleague@gmail.com
                 </li>
               </ul>
             </div>
@@ -225,9 +219,9 @@ const Footer = () => {
 
           <div className="footer-bottom">
             <div className="copyright">
-              © {currentYear} ST. JEROME LEAGUE • ALL RIGHTS RESERVED
+              © {currentYear} St. Jerome League. All rights reserved.
             </div>
-            <div className="copyright" style={{ opacity: 0.7 }}>
+            <div className="copyright" style={{ opacity: 0.6 }}>
               Est. 2026
             </div>
           </div>

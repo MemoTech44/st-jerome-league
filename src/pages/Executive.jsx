@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, query } from 'firebase/firestore';
-import { UserCircle, Loader2 } from 'lucide-react';
+import { UserCircle, Loader2, Award } from 'lucide-react';
 
 const Executive = () => {
   const [committee, setCommittee] = useState([]);
@@ -34,68 +34,108 @@ const Executive = () => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
         .exec-page { 
-          background-color: #f8fafc; 
+          background-color: #04060d; 
           min-height: 100vh; 
-          padding: 140px 5% 100px; 
+          padding: 120px 5% 100px; 
           font-family: 'Plus Jakarta Sans', sans-serif; 
-          color: #1e293b; 
-        }
-        .container { max-width: 1100px; margin: 0 auto; }
-        
-        .header-box { text-align: center; margin-bottom: 60px; }
-        .header-box h1 { 
-          font-size: clamp(2.2rem, 5vw, 3.2rem); 
-          letter-spacing: -1px; 
-          color: #1e3a8a; 
-          margin: 0;
-          font-weight: 800;
-        }
-        .header-underline {
-          width: 60px;
-          height: 5px;
-          background: #facc15; 
-          margin: 15px auto 25px;
-          border-radius: 10px;
-        }
-        .header-description {
-          max-width: 750px;
-          margin: 0 auto;
-          font-size: 1.05rem;
-          line-height: 1.7;
-          color: #64748b;
-          font-weight: 600;
+          color: #f8fafc; 
+          box-sizing: border-box;
         }
 
+        .container { 
+          max-width: 1100px; 
+          margin: 0 auto; 
+        }
+        
+        .gold-text { color: #facc15; }
+
+        /* Header Section */
+        .header-box { 
+          text-align: center; 
+          margin-bottom: 60px; 
+        }
+
+        .header-tag {
+          font-family: 'Cinzel', serif;
+          color: #facc15;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          display: block;
+          margin-bottom: 8px;
+        }
+
+        .header-box h1 { 
+          font-family: 'Bebas Neue', cursive;
+          font-size: clamp(3rem, 7vw, 4.8rem); 
+          color: #ffffff; 
+          letter-spacing: 2px; 
+          margin: 0; 
+          line-height: 1;
+        }
+
+        .header-underline { 
+          width: 80px; 
+          height: 4px; 
+          background: linear-gradient(90deg, #facc15, rgba(250, 204, 21, 0.2)); 
+          margin: 20px auto 25px; 
+          border-radius: 4px; 
+        }
+
+        .header-description {
+          max-width: 720px;
+          margin: 0 auto;
+          color: #94a3b8;
+          font-size: 1rem;
+          line-height: 1.7;
+          font-weight: 500;
+        }
+
+        /* Executive Grid */
         .exec-grid { 
           display: grid; 
           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
           gap: 30px; 
         }
         
+        /* Member Card Styling */
         .member-card { 
-          background: #ffffff; 
-          border-radius: 24px; 
-          padding: 45px 25px; 
+          background: rgba(15, 23, 42, 0.6); 
+          backdrop-filter: blur(12px);
+          border-radius: 28px; 
+          padding: 40px 25px; 
           text-align: center; 
-          box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
-          border: 1px solid #e2e8f0;
-          transition: all 0.3s ease;
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+          overflow: hidden;
         }
         
         .member-card:hover { 
-          transform: translateY(-10px); 
-          border-color: #1e3a8a; 
-          box-shadow: 0 20px 40px -15px rgba(30,58,138,0.1);
+          transform: translateY(-8px); 
+          border-color: rgba(250, 204, 21, 0.5); 
+          box-shadow: 0 20px 40px rgba(250, 204, 21, 0.12);
+          background: rgba(15, 23, 42, 0.85);
         }
 
+        /* Photo Holder */
         .photo-container {
           position: relative;
-          width: 140px;
-          height: 140px;
-          margin: 0 auto 25px;
+          width: 130px;
+          height: 130px;
+          margin: 0 auto 20px;
+          border-radius: 50%;
+          padding: 4px;
+          background: linear-gradient(135deg, #facc15, rgba(250, 204, 21, 0.1));
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
         .member-photo { 
@@ -103,30 +143,43 @@ const Executive = () => {
           height: 100%; 
           object-fit: cover; 
           border-radius: 50%; 
-          border: 4px solid #1e3a8a; 
-          background: #f8fafc;
-          padding: 3px;
+          background: #0f172a;
+          display: block;
         }
 
+        .photo-placeholder {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: #0f172a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        /* Member Info */
         .member-name { 
-          font-size: 1.35rem; 
-          font-weight: 800; 
-          margin-bottom: 10px; 
-          color: #0f172a;
+          font-size: 1.3rem; 
+          font-weight: 700; 
+          margin-bottom: 12px; 
+          color: #ffffff;
           text-transform: capitalize;
+          letter-spacing: 0.3px;
         }
 
         .member-role { 
-          color: #1e3a8a; 
-          font-size: 0.8rem; 
+          color: #facc15; 
+          font-size: 0.75rem; 
           font-weight: 800; 
           text-transform: uppercase; 
-          letter-spacing: 0.8px;
-          background: #eff6ff; 
-          padding: 6px 18px;
+          letter-spacing: 1px;
+          background: rgba(250, 204, 21, 0.1); 
+          padding: 8px 18px;
           border-radius: 50px;
-          display: inline-block;
-          border: 1px solid #dbeafe;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          border: 1px solid rgba(250, 204, 21, 0.25);
         }
 
         @media (max-width: 600px) {
@@ -139,22 +192,23 @@ const Executive = () => {
       <div className="exec-page">
         <div className="container">
           <header className="header-box">
-            <h1>League Executive Committee</h1>
+            <span className="header-tag">Leadership & Governance</span>
+            <h1>EXECUTIVE <span className="gold-text">COMMITTEE</span></h1>
             <div className="header-underline"></div>
             <p className="header-description">
               Meet the visionary team driving the St. Jerome Alumni League forward. 
               Our executive board is committed to fostering sportsmanship, strengthening 
-              alumni bonds, and ensuring excellence across all league operations.
+              alumni bonds, and ensuring operational excellence.
             </p>
           </header>
 
           <div className="exec-grid">
             {loading ? (
               <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px 0' }}>
-                <Loader2 className="animate-spin" color="#1e3a8a" size={40} style={{ margin: '0 auto' }} />
+                <Loader2 className="animate-spin gold-text" size={42} style={{ margin: '0 auto' }} />
               </div>
             ) : committee.length === 0 ? (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#94a3b8' }}>
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#94a3b8', padding: '60px 0' }}>
                 <p>No committee members found.</p>
               </div>
             ) : (
@@ -164,14 +218,17 @@ const Executive = () => {
                     {member.imageUrl ? (
                       <img src={member.imageUrl} alt={member.name} className="member-photo" />
                     ) : (
-                      <div className="member-photo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <UserCircle size={90} color="#cbd5e1" />
+                      <div className="photo-placeholder">
+                        <UserCircle size={80} color="#475569" />
                       </div>
                     )}
                   </div>
                   
-                  <div className="member-name">{member.name.toLowerCase()}</div>
-                  <div className="member-role">{member.position}</div>
+                  <div className="member-name">{member.name}</div>
+                  <div className="member-role">
+                    <Award size={14} />
+                    {member.position || 'Board Member'}
+                  </div>
                 </div>
               ))
             )}

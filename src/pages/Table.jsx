@@ -2,35 +2,41 @@ import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Trophy, Loader2, Shield, Download } from 'lucide-react';
-import { toJpeg } from 'html-to-image'; // Import the library
+import { toJpeg } from 'html-to-image';
 
 const Table = () => {
   const [leagueData, setLeagueData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState("Season 2");
-  const tableRef = useRef(null); // Reference for the table capture
+  const tableRef = useRef(null);
 
-  const seasons = ["Season 1", "Season 2", "Season 3", "Season 4", "Season 5"];
+  // Capped up to Season 4
+  const seasons = ["Season 1", "Season 2", "Season 3", "Season 4"];
 
-  // Function to handle the download
-  const downloadTable = () => {
+  // Download JPEG Handler
+  const downloadTable = async () => {
     if (tableRef.current === null) return;
+    setDownloading(true);
 
-    // Use toJpeg to capture the element
-    toJpeg(tableRef.current, { 
-      quality: 0.95, 
-      backgroundColor: '#ffffff',
-      style: { borderRadius: '0px' } // Prevents rounded corners cutting off in the image
-    })
-      .then((dataUrl) => {
-        const link = document.createElement('a');
-        link.download = `St-Jerome-Standings-${selectedSeason}.jpg`;
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch((err) => {
-        console.error('Download failed', err);
+    try {
+      const dataUrl = await toJpeg(tableRef.current, { 
+        quality: 0.95, 
+        backgroundColor: '#04060d',
+        cacheBust: true,
+        style: { padding: '24px', borderRadius: '24px' }
       });
+
+      const link = document.createElement('a');
+      link.download = `St-Jerome-Standings-${selectedSeason}.jpg`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Download failed:', err);
+      alert("Failed to generate image. Please check your connection.");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   useEffect(() => {
@@ -106,152 +112,279 @@ const Table = () => {
   }, [selectedSeason]);
 
   return (
-    <>
+    <div className="table-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         .table-page { 
-          background-color: #f8fafc; 
-          padding: 140px 5% 80px; 
+          background-color: #04060d; 
+          padding: 120px 5% 80px; 
           min-height: 100vh; 
           font-family: 'Plus Jakarta Sans', sans-serif; 
-          color: #1e293b;
+          color: #f8fafc;
+          box-sizing: border-box;
         }
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .gold-text { color: #facc15; }
         
+        /* Header Box */
         .header-box { text-align: center; margin-bottom: 40px; }
-        .header-box h1 { 
-          font-size: clamp(2.2rem, 5vw, 3rem); 
-          font-weight: 800; 
-          color: #1e3a8a; 
-          margin: 0;
-          letter-spacing: -1px;
-        }
-        .header-underline {
-          width: 50px;
-          height: 5px;
-          background: #facc15;
-          margin: 15px auto;
-          border-radius: 10px;
+
+        .header-tag {
+          font-family: 'Cinzel', serif;
+          color: #facc15;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          display: block;
+          margin-bottom: 8px;
         }
 
+        .header-box h1 { 
+          font-family: 'Bebas Neue', cursive;
+          font-size: clamp(3rem, 7vw, 4.8rem); 
+          color: #ffffff; 
+          letter-spacing: 2px; 
+          margin: 0 0 6px 0; 
+          line-height: 1;
+        }
+
+        .header-box p {
+          color: #94a3b8;
+          font-size: 0.95rem;
+          font-weight: 500;
+          margin: 0;
+        }
+
+        /* Controls Section */
         .action-bar {
           display: flex;
           justify-content: space-between;
           align-items: center;
           margin-bottom: 25px;
           flex-wrap: wrap;
-          gap: 20px;
+          gap: 15px;
+        }
+
+        .season-filter { 
+          display: flex; 
+          gap: 6px; 
+          background: rgba(15, 23, 42, 0.8); 
+          padding: 6px; 
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+          margin: 0 auto;
+        }
+
+        .season-tab { 
+          padding: 10px 18px; 
+          border-radius: 14px; 
+          border: none; 
+          background: transparent; 
+          color: #94a3b8; 
+          font-weight: 800; 
+          font-size: 0.75rem; 
+          cursor: pointer;
+          transition: all 0.3s ease;
+          letter-spacing: 0.5px;
+        }
+
+        .season-tab:hover { color: #ffffff; }
+
+        .season-tab.active { 
+          background: #facc15; 
+          color: #04060d; 
+          box-shadow: 0 4px 15px rgba(250, 204, 21, 0.25);
         }
 
         .download-btn {
+          background: rgba(250, 204, 21, 0.1);
+          color: #facc15;
+          border: 1px solid rgba(250, 204, 21, 0.3);
+          padding: 11px 20px;
+          border-radius: 16px;
+          font-weight: 800;
+          cursor: pointer;
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 8px;
-          background: #1e3a8a;
-          color: #facc15;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 12px;
-          font-weight: 800;
-          font-size: 0.85rem;
-          cursor: pointer;
-          transition: 0.3s;
+          font-size: 0.8rem;
+          letter-spacing: 0.5px;
+          transition: all 0.3s ease;
         }
-        .download-btn:hover { background: #162e70; transform: translateY(-2px); }
-        
-        .season-filter { 
-          display: flex; gap: 8px; 
-          background: #f1f5f9; padding: 6px; border-radius: 16px;
-          border: 1px solid #e2e8f0;
-        }
-        .season-tab { 
-          padding: 10px 20px; border-radius: 12px; border: none; background: transparent; 
-          color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
-        }
-        .season-tab.active { background: #1e3a8a; color: #facc15; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
 
+        .download-btn:hover:not(:disabled) {
+          background: #facc15;
+          color: #04060d;
+          box-shadow: 0 6px 20px rgba(250, 204, 21, 0.25);
+        }
+
+        .download-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Table Card & Content */
         .table-card { 
-          background: white; 
+          background: rgba(15, 23, 42, 0.6); 
+          backdrop-filter: blur(12px);
           border-radius: 24px; 
           overflow: hidden; 
-          box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05); 
-          border: 1px solid #e2e8f0; 
+          box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+          border: 1px solid rgba(255, 255, 255, 0.08); 
+          padding: 10px;
         }
         
         table { width: 100%; border-collapse: collapse; }
+        
         th { 
-          background: #f8fafc; 
-          padding: 18px 10px; 
+          background: rgba(4, 6, 13, 0.6); 
+          padding: 16px 12px; 
           font-size: 0.75rem; 
           font-weight: 800; 
           color: #64748b; 
           text-transform: uppercase; 
-          border-bottom: 2px solid #f1f5f9; 
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+          letter-spacing: 1px;
         }
         
         td { 
-          padding: 18px 10px; 
-          border-bottom: 1px solid #f1f5f9; 
-          font-weight: 700; 
+          padding: 16px 12px; 
+          border-bottom: 1px solid rgba(255, 255, 255, 0.04); 
+          font-weight: 600; 
           text-align: center; 
-          color: #1e293b; 
-          font-size: 0.95rem; 
+          color: #e2e8f0; 
+          font-size: 0.9rem; 
         }
         
-        .w-pos { width: 60px; color: #64748b; }
-        .w-team { text-align: left; padding-left: 20px; }
-        .w-pts { background: #eff6ff; color: #1e3a8a; font-weight: 800; width: 80px; }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
-        .col-team-cell { display: flex; align-items: center; gap: 14px; }
+        .w-pos { 
+          width: 50px; 
+          font-family: 'Bebas Neue', cursive; 
+          font-size: 1.1rem; 
+          color: #facc15; 
+        }
+
+        .w-team { text-align: left; padding-left: 15px; }
+
+        .w-pts { 
+          background: rgba(250, 204, 21, 0.08); 
+          color: #facc15; 
+          font-family: 'Bebas Neue', cursive; 
+          font-size: 1.2rem;
+          width: 70px; 
+        }
+
+        .col-team-cell { display: flex; align-items: center; gap: 12px; }
+        
+        /* Team Name: Unbolded */
+        .team-name-text { 
+          font-family: 'Bebas Neue', cursive;
+          font-size: 1.25rem; 
+          font-weight: 400; 
+          color: #ffffff; 
+          letter-spacing: 0.5px;
+        }
+
         .team-logo-container { 
-          width: 32px; height: 32px; 
-          display: flex; align-items: center; justify-content: center; 
-          background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9;
+          width: 32px; 
+          height: 32px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          background: #04060d; 
+          border-radius: 10px; 
+          border: 1px solid rgba(250, 204, 21, 0.2);
+          flex-shrink: 0;
         }
-        .team-logo { width: 22px; height: 22px; object-fit: contain; }
+
+        .team-logo { width: 20px; height: 20px; object-fit: contain; }
         
-        tr.leader { background: #fffdf5; }
+        tr.leader td { background: rgba(250, 204, 21, 0.03); }
+
         .legend { 
-          display: flex; justify-content: center; gap: 20px; margin-top: 30px; padding: 20px; 
-          background: white; border-radius: 16px; border: 1px solid #e2e8f0; flex-wrap: wrap;
-          font-size: 0.75rem; color: #64748b; font-weight: 600;
+          display: flex; 
+          justify-content: center; 
+          gap: 18px; 
+          margin-top: 25px; 
+          padding: 16px; 
+          background: rgba(15, 23, 42, 0.6); 
+          border-radius: 18px; 
+          border: 1px solid rgba(255, 255, 255, 0.08); 
+          flex-wrap: wrap;
+          font-size: 0.75rem; 
+          color: #94a3b8; 
+          font-weight: 600;
         }
-        
+
+        .legend b { color: #facc15; }
+
+        .export-header {
+          text-align: center;
+          padding-bottom: 20px;
+          margin-bottom: 15px;
+          border-bottom: 1px solid rgba(250, 204, 21, 0.2);
+        }
+
         @media (max-width: 768px) {
+          .table-page { padding-top: 100px; }
           .hide-mobile { display: none; }
-          .action-bar { justify-content: center; }
+          
+          /* Hide logos on mobile screens */
+          .hide-mobile-logo { display: none !important; }
+
+          .action-bar { flex-direction: column; align-items: center; gap: 12px; }
+          .download-btn { width: 100%; max-width: 300px; }
+          td, th { padding: 12px 6px; font-size: 0.8rem; }
+          .team-name-text { font-size: 0.95rem; }
+          .w-team { padding-left: 5px; }
         }
       `}</style>
 
-      <div className="table-page">
-        <div className="container">
-          <div className="header-box">
-            <h1>League Table</h1>
-            <div className="header-underline"></div>
-            <p>Official standings for the St. Jerome Alumni League.</p>
+      <div className="container">
+        <header className="header-box">
+          <span className="header-tag">League Archives</span>
+          <h1>LEAGUE <span className="gold-text">STANDINGS</span></h1>
+          <p>Official performance table for {selectedSeason}</p>
+        </header>
+
+        <div className="action-bar">
+          <div className="season-filter">
+            {seasons.map(s => (
+              <button 
+                key={s} 
+                onClick={() => setSelectedSeason(s)} 
+                className={`season-tab ${selectedSeason === s ? 'active' : ''}`}
+              >
+                {s}
+              </button>
+            ))}
           </div>
 
-          <div className="action-bar">
-            <div className="season-filter">
-              {seasons.map(s => (
-                <button key={s} onClick={() => setSelectedSeason(s)} className={`season-tab ${selectedSeason === s ? 'active' : ''}`}>
-                  {s}
-                </button>
-              ))}
+          <button className="download-btn" onClick={downloadTable} disabled={downloading}>
+            {downloading ? <Loader2 className="animate-spin" size={16}/> : <Download size={16}/>}
+            SAVE AS JPG
+          </button>
+        </div>
+
+        <div className="table-card" ref={tableRef}>
+          {loading ? (
+            <div style={{ padding: '80px', textAlign: 'center' }}>
+              <Loader2 className="animate-spin" size={40} color="#facc15" style={{ margin: 'auto' }}/>
+              <p style={{ marginTop: '15px', fontWeight: 800, color: '#facc15', letterSpacing: '2px', fontSize: '0.8rem' }}>
+                CALCULATING STANDINGS...
+              </p>
             </div>
-
-            <button className="download-btn" onClick={downloadTable}>
-              <Download size={18} /> DOWNLOAD JPG
-            </button>
-          </div>
-
-          <div className="table-card" ref={tableRef}>
-            {loading ? (
-              <div style={{ padding: '80px', textAlign: 'center' }}>
-                <Loader2 className="animate-spin" size={40} color="#1e3a8a" style={{margin:'auto'}}/>
+          ) : (
+            <div>
+              <div className="export-header" style={{ display: downloading ? 'block' : 'none' }}>
+                <span style={{ fontFamily: 'Cinzel', color: '#facc15', fontSize: '0.8rem', letterSpacing: '2px', display: 'block' }}>ST. JEROME LEAGUE</span>
+                <h2 style={{ fontFamily: 'Bebas Neue', fontSize: '2.2rem', color: '#ffffff', margin: '2px 0 0 0' }}>
+                  {selectedSeason} — STANDINGS
+                </h2>
               </div>
-            ) : (
+
               <div style={{ overflowX: 'auto' }}>
                 <table>
                   <thead>
@@ -274,10 +407,15 @@ const Table = () => {
                         <td className="w-pos">{team.pos}</td>
                         <td className="w-team">
                           <div className="col-team-cell">
-                            <div className="team-logo-container">
-                              {team.logo ? <img src={team.logo} className="team-logo" alt=""/> : <Shield size={16} color="#cbd5e1"/>}
+                            {/* Logo hidden on mobile screens */}
+                            <div className="team-logo-container hide-mobile-logo">
+                              {team.logo ? (
+                                <img src={team.logo} className="team-logo" crossOrigin="anonymous" alt=""/>
+                              ) : (
+                                <Shield size={14} color="#facc15"/>
+                              )}
                             </div>
-                            <span>{team.name}</span>
+                            <span className="team-name-text">{team.name}</span>
                           </div>
                         </td>
                         <td>{team.p}</td>
@@ -295,20 +433,20 @@ const Table = () => {
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
 
-          <div className="legend">
-            <span><b>P</b> Played</span>
-            <span><b>W</b> Won</span>
-            <span><b>D</b> Drawn</span>
-            <span><b>L</b> Lost</span>
-            <span><b>GD</b> Goal Difference</span>
-            <span><b>Pts</b> Points</span>
-          </div>
+        <div className="legend">
+          <span><b>P</b> Played</span>
+          <span><b>W</b> Won</span>
+          <span><b>D</b> Drawn</span>
+          <span><b>L</b> Lost</span>
+          <span><b>GD</b> Goal Difference</span>
+          <span><b>Pts</b> Points</span>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

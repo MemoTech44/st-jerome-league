@@ -8,6 +8,7 @@ import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
+import { Helmet } from 'react-helmet-async';
 
 // Sub-components
 import NewsManager from './NewsManager';
@@ -26,26 +27,18 @@ const Dashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const navigate = useNavigate();
 
-  const COLORS = {
-    blue: '#1e40af',
-    yellow: '#facc15',
-    slate: '#64748b',
-    dark: '#0f172a',
-    bg: '#f8fafc'
-  };
-
   const pageInfo = {
     overview: { 
-      title: "St. Jerome League Admin", 
-      desc: "The central gateway for managing league operations. From here, you can coordinate match schedules, oversee player registrations, and keep fans updated with the latest news. Every action taken here synchronizes instantly with the live public portal." 
+      title: "League Operations Hub", 
+      desc: "The central control panel for managing St. Jerome League operations. Coordinate schedules, oversee player registrations, and publish news updates—all synchronized instantly with the live portal." 
     },
-    news: { title: "News Manager", desc: "Compose, edit, and publish breaking news, official press releases, and blog updates directly to the league's front page." },
-    fixtures: { title: "Match Fixtures", desc: "Organize the season by setting up upcoming match dates, kick-off times, and stadium venues for all participating clubs." },
-    results: { title: "Match Results", desc: "Finalize game days by recording official scores and individual scorers to update the league table in real-time." },
-    clubs: { title: "Club Database", desc: "View and manage registered league teams, update their official information, and verify club status." },
-    players: { title: "Player Registry", desc: "Maintain a comprehensive list of all registered players, including their stats, registration numbers, and club affiliations." },
-    exec: { title: "Executive Board", desc: "Manage the official profiles and hierarchy of the league's leadership and technical committee." },
-    inbox: { title: "Message Inbox", desc: "Review and respond to inquiries, feedback, and collaboration requests received through the official contact forms." }
+    news: { title: "News Manager", desc: "Compose, edit, and publish breaking news, official press releases, and announcements directly to the public portal." },
+    fixtures: { title: "Match Fixtures", desc: "Organize the season by setting up upcoming match dates, kick-off times, and venues for all participating clubs." },
+    results: { title: "Match Results", desc: "Finalize game days by recording official scores and individual match statistics to update standings in real-time." },
+    clubs: { title: "Club Database", desc: "View and manage registered league teams, update official information, and manage club rosters." },
+    players: { title: "Player Registry", desc: "Maintain the comprehensive registry of all active players, including registration numbers and squad affiliations." },
+    exec: { title: "Executive Board", desc: "Manage the official profiles and hierarchy of the league leadership and technical committee." },
+    inbox: { title: "Message Inbox", desc: "Review and respond to inquiries, feedback, and collaboration requests received through contact forms." }
   };
 
   useEffect(() => {
@@ -61,7 +54,11 @@ const Dashboard = () => {
         const collections = ["clubs", "news", "messages", "players"];
         const results = await Promise.all(collections.map(col => getDocs(collection(db, col))));
         setStats({ clubs: results[0].size, news: results[1].size, messages: results[2].size, players: results[3].size });
-      } catch (error) { console.error(error); } finally { setLoadingStats(false); }
+      } catch (error) { 
+        console.error(error); 
+      } finally { 
+        setLoadingStats(false); 
+      }
     };
     fetchStats();
   }, [activeTab]);
@@ -86,120 +83,322 @@ const Dashboard = () => {
 
   return (
     <div className="admin-root">
+      <Helmet>
+        <title>Admin Dashboard | St. Jerome League</title>
+      </Helmet>
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=Inter:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         .admin-root { 
           min-height: 100vh; 
-          background: ${COLORS.bg}; 
-          font-family: 'Inter', sans-serif; 
-          padding-top: 120px; 
+          background-color: #04060d; 
+          font-family: 'Plus Jakarta Sans', sans-serif; 
+          padding-top: 100px; 
           display: flex; 
           flex-direction: column; 
+          color: #ffffff;
         }
         
         .navbar { 
-          position: fixed; top: 0; width: 100%; height: 80px; background: white; 
-          border-bottom: 2px solid #eef2f6; display: flex; align-items: center; 
-          justify-content: center; padding: 0 5%; z-index: 1000; 
+          position: fixed; 
+          top: 0; 
+          width: 100%; 
+          height: 75px; 
+          background: rgba(4, 6, 13, 0.85); 
+          backdrop-filter: blur(16px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+          display: flex; 
+          align-items: center; 
+          justify-content: space-between; 
+          padding: 0 5%; 
+          z-index: 1000; 
+          box-sizing: border-box;
         }
 
-        .desktop-links { display: flex; gap: 4px; }
+        .brand-mobile {
+          font-family: 'Cinzel', serif;
+          font-weight: 800;
+          color: #facc15;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          display: none;
+        }
+
+        .desktop-links { 
+          display: flex; 
+          gap: 6px; 
+          margin: 0 auto;
+        }
+
         .link-btn { 
-          display: flex; align-items: center; gap: 8px; padding: 10px 14px; 
-          border: none; background: transparent; color: ${COLORS.slate}; 
-          font-weight: 700; font-size: 0.75rem; border-radius: 12px; cursor: pointer; 
-          transition: 0.2s; text-transform: uppercase; 
+          display: flex; 
+          align-items: center; 
+          gap: 8px; 
+          padding: 10px 16px; 
+          border: 1px solid transparent; 
+          background: transparent; 
+          color: #94a3b8; 
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-weight: 700; 
+          font-size: 0.75rem; 
+          border-radius: 12px; 
+          cursor: pointer; 
+          transition: all 0.3s ease; 
+          text-transform: uppercase; 
+          letter-spacing: 0.5px;
         }
-        .link-btn.active { background: ${COLORS.blue}; color: white; }
-        .link-btn:hover:not(.active) { background: #f1f5f9; color: ${COLORS.blue}; }
 
-        .popout-card { 
-          position: fixed; top: 90px; right: 20px; width: 260px; background: white; 
-          border-radius: 24px; padding: 15px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); 
-          z-index: 2000; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 4px; 
+        .link-btn.active { 
+          background: rgba(250, 204, 21, 0.1); 
+          color: #facc15; 
+          border-color: rgba(250, 204, 21, 0.3);
+          box-shadow: 0 0 15px rgba(250, 204, 21, 0.1);
         }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.1); backdrop-filter: blur(4px); z-index: 1500; }
 
-        .content-area { max-width: 1200px; margin: 0 auto; width: 92%; flex-grow: 1; text-align: center; }
+        .link-btn:hover:not(.active) { 
+          background: rgba(255, 255, 255, 0.05); 
+          color: #ffffff; 
+        }
+
+        .mobile-drawer { 
+          position: fixed; 
+          top: 0; 
+          left: 0;
+          bottom: 0; 
+          width: 290px; 
+          background: #090d16; 
+          padding: 24px 20px; 
+          border-right: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 20px 0 50px rgba(0, 0, 0, 0.8); 
+          z-index: 2000; 
+          display: flex; 
+          flex-direction: column; 
+          gap: 8px; 
+          transform: translateX(-100%);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .mobile-drawer.open {
+          transform: translateX(0);
+        }
+
+        .drawer-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-bottom: 20px;
+          margin-bottom: 10px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .drawer-title {
+          font-family: 'Cinzel', serif;
+          color: #facc15;
+          font-weight: 700;
+          font-size: 0.85rem;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+        }
+
+        .overlay { 
+          position: fixed; 
+          inset: 0; 
+          background: rgba(0, 0, 0, 0.7); 
+          backdrop-filter: blur(6px); 
+          z-index: 1500; 
+          animation: fadeIn 0.2s ease;
+        }
+
+        .content-area { 
+          max-width: 1200px; 
+          margin: 0 auto; 
+          width: 90%; 
+          flex-grow: 1; 
+          text-align: center; 
+        }
         
-        /* ADJUSTED HEADINGS: Blue, Moderate Size, Capitalized */
         .page-header h2 { 
-          font-family: 'Archivo'; 
-          color: ${COLORS.blue}; 
-          font-size: clamp(2.5rem, 8vw, 3.8rem); 
-          text-transform: capitalize; 
+          font-family: 'Bebas Neue', cursive; 
+          color: #ffffff; 
+          font-size: clamp(2.5rem, 6vw, 4rem); 
+          letter-spacing: 1.5px;
           margin: 0; 
-          line-height: 1.1;
-          letter-spacing: -1.5px;
-          font-weight: 900;
+          line-height: 1;
         }
         
-        .title-divider { height: 8px; width: 100px; background: ${COLORS.yellow}; margin: 25px auto; border-radius: 10px; }
-        .description-text { color: ${COLORS.slate}; font-size: 1.15rem; max-width: 850px; margin: 0 auto; font-weight: 500; line-height: 1.7; }
-
-        .footer { background: white; border-top: 2px solid #eef2f6; padding: 50px 0; margin-top: 100px; text-align: center; }
-
-        .mobile-btn { position: absolute; left: 20px; background: #f1f5f9; border:none; padding:12px; border-radius:14px; cursor: pointer; display: none; }
-
-        @media (max-width: 1100px) {
-          .desktop-links { display: none; }
-          .mobile-btn { display: block; }
-          .page-header h2 { font-size: 2.2rem; letter-spacing: -1px; }
+        .title-divider { 
+          height: 4px; 
+          width: 70px; 
+          background: #facc15; 
+          margin: 18px auto; 
+          border-radius: 4px; 
+          box-shadow: 0 0 10px rgba(250, 204, 21, 0.4);
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .description-text { 
+          color: #94a3b8; 
+          font-size: clamp(0.95rem, 2.5vw, 1.1rem); 
+          max-width: 800px; 
+          margin: 0 auto; 
+          font-weight: 500; 
+          line-height: 1.6; 
+        }
+
+        .footer { 
+          background: #04060d; 
+          border-top: 1px solid rgba(255, 255, 255, 0.05); 
+          padding: 40px 20px; 
+          margin-top: 60px; 
+          text-align: center; 
+        }
+
+        .mobile-btn { 
+          background: rgba(255, 255, 255, 0.05); 
+          border: 1px solid rgba(255, 255, 255, 0.1); 
+          padding: 10px; 
+          border-radius: 10px; 
+          cursor: pointer; 
+          display: none; 
+          align-items: center;
+          justify-content: center;
+        }
+
+        .time-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          color: #facc15;
+          font-size: 0.85rem;
+          font-weight: 700;
+          background: rgba(15, 23, 42, 0.6);
+          padding: 10px 20px;
+          border-radius: 30px;
+          border: 1px solid rgba(250, 204, 21, 0.2);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 1024px) {
+          .desktop-links { display: none; }
+          .mobile-btn { display: flex; }
+          .brand-mobile { display: block; }
+          .admin-root { padding-top: 90px; }
+          .page-header { margin-bottom: 30px !important; }
+        }
+
+        @keyframes fadeIn { 
+          from { opacity: 0; } 
+          to { opacity: 1; } 
+        }
       `}</style>
 
+      {/* Navigation Header */}
       <nav className="navbar">
-        <button className="mobile-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X size={24} color={COLORS.blue}/> : <Menu size={24} color={COLORS.blue}/>}
+        <span className="brand-mobile">St. Jerome League Admin</span>
+
+        <button 
+          className="mobile-btn" 
+          onClick={() => setIsMobileMenuOpen(true)}
+          aria-label="Open Navigation Menu"
+        >
+          <Menu size={20} color="#facc15" />
         </button>
 
         <div className="desktop-links">
           {navItems.map(item => (
-            <button key={item.id} className={`link-btn ${activeTab === item.id ? 'active' : ''}`} onClick={() => setActiveTab(item.id)}>
+            <button 
+              key={item.id} 
+              className={`link-btn ${activeTab === item.id ? 'active' : ''}`} 
+              onClick={() => setActiveTab(item.id)}
+            >
               <item.icon size={16} /> {item.label}
             </button>
           ))}
-          <button onClick={() => signOut(auth).then(() => navigate('/login'))} className="link-btn" style={{color: '#ef4444'}}><LogOut size={16} /></button>
+          <button 
+            onClick={() => signOut(auth).then(() => navigate('/admin/login'))} 
+            className="link-btn" 
+            style={{ color: '#f87171' }}
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </nav>
 
+      {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <>
-          <div className="overlay" onClick={() => setIsMobileMenuOpen(false)} />
-          <div className="popout-card">
-            {navItems.map(item => (
-              <button key={item.id} className={`link-btn ${activeTab === item.id ? 'active' : ''}`} onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} style={{justifyContent: 'flex-start', padding: '14px', width: '100%'}}>
-                <item.icon size={18} /> {item.label}
-              </button>
-            ))}
-            <hr style={{border: '0', borderTop: '1px solid #f1f5f9', margin: '10px 0'}} />
-            <button onClick={() => signOut(auth).then(() => navigate('/login'))} className="link-btn" style={{color: '#ef4444', justifyContent: 'flex-start'}}><LogOut size={18} /> Logout</button>
-          </div>
-        </>
+        <div className="overlay" onClick={() => setIsMobileMenuOpen(false)} />
       )}
+      
+      <aside className={`mobile-drawer ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div className="drawer-header">
+          <span className="drawer-title">Admin Navigation</span>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+          >
+            <X size={20} color="#94a3b8" />
+          </button>
+        </div>
 
+        {navItems.map(item => (
+          <button 
+            key={item.id} 
+            className={`link-btn ${activeTab === item.id ? 'active' : ''}`} 
+            onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }} 
+            style={{ justifyContent: 'flex-start', padding: '12px 16px', width: '100%', fontSize: '0.8rem' }}
+          >
+            <item.icon size={18} /> {item.label}
+          </button>
+        ))}
+        
+        <div style={{ marginTop: 'auto', paddingTop: '15px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <button 
+            onClick={() => signOut(auth).then(() => navigate('/admin/login'))} 
+            className="link-btn" 
+            style={{ color: '#f87171', justifyContent: 'flex-start', width: '100%', padding: '12px 16px' }}
+          >
+            <LogOut size={18} /> Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
       <main className="content-area">
-        <header className="page-header" style={{ marginBottom: '60px' }}>
+        <header className="page-header" style={{ marginBottom: '45px' }}>
           <h2>{pageInfo[activeTab].title}</h2>
           <div className="title-divider"></div>
           <p className="description-text">{pageInfo[activeTab].desc}</p>
           
           {activeTab === 'overview' && (
-            <div style={{ marginTop: '40px', animation: 'fadeIn 1s ease' }}>
-              <h4 style={{ color: COLORS.blue, textTransform: 'uppercase', letterSpacing: '4px', fontWeight: 900, marginBottom: '10px', fontSize: '1rem' }}>{getGreeting()}</h4>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', color: COLORS.slate, fontSize: '1rem', fontWeight: 600 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Clock size={20} color={COLORS.blue} /> {currentTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second: '2-digit'})}</span>
-                <span style={{opacity: 0.3, fontSize: '1.2rem'}}>|</span>
-                <span>{currentTime.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <div style={{ marginTop: '25px', animation: 'fadeIn 0.5s ease' }}>
+              <h4 style={{ 
+                fontFamily: 'Cinzel, serif',
+                color: '#facc15', 
+                textTransform: 'uppercase', 
+                letterSpacing: '2px', 
+                fontWeight: 700, 
+                marginBottom: '12px', 
+                fontSize: '0.8rem' 
+              }}>
+                {getGreeting()}
+              </h4>
+              
+              <div className="time-badge">
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Clock size={15} color="#facc15" /> 
+                  {currentTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second: '2-digit'})}
+                </span>
+                <span style={{ opacity: 0.3 }}>•</span>
+                <span>{currentTime.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </div>
             </div>
           )}
         </header>
 
-        <section style={{ animation: 'fadeIn 0.6s ease-out' }}>
+        <section>
           {activeTab === 'overview' ? <Overview stats={stats} loading={loadingStats} setTab={setActiveTab} /> : 
            activeTab === 'news' ? <NewsManager /> :
            activeTab === 'fixtures' ? <FixturesManager /> :
@@ -210,36 +409,170 @@ const Dashboard = () => {
         </section>
       </main>
 
+      {/* Footer */}
       <footer className="footer">
-        <div style={{ fontFamily: 'Archivo', color: COLORS.blue, fontSize: '1.4rem', marginBottom: '8px', fontWeight: 900, textTransform: 'capitalize' }}>St. Jerome League</div>
-        <p style={{ color: COLORS.slate, fontSize: '0.85rem', fontWeight: 700, letterSpacing: '1px' }}>ADMINISTRATOR PORTAL • SECURE SESSION ACTIVE</p>
+        <div style={{ fontFamily: 'Cinzel, serif', color: '#facc15', fontSize: '0.9rem', marginBottom: '6px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' }}>
+          St. Jerome League
+        </div>
+        <p style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '1px', margin: 0 }}>
+          ADMINISTRATOR PORTAL • SECURE SESSION ACTIVE
+        </p>
       </footer>
     </div>
   );
 };
 
 const Overview = ({ stats, loading, setTab }) => (
-  <div style={{ paddingBottom: '100px' }}>
+  <div style={{ paddingBottom: '60px' }}>
     <style>{`
-      .action-banner { background: #1e40af; border-radius: 40px; padding: 60px 30px; margin-bottom: 60px; color: white; box-shadow: 0 30px 60px -15px rgba(30,64,175,0.3); }
-      .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; }
-      .interactive-card { 
-        background: white; padding: 50px 25px; border-radius: 35px; border: 1px solid #eef2f6; 
-        text-align: center; cursor: pointer; transition: all 0.4s ease;
+      .action-banner { 
+        background: rgba(15, 23, 42, 0.65); 
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 28px; 
+        padding: 40px 24px; 
+        margin-bottom: 40px; 
+        color: white; 
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); 
       }
-      .interactive-card:hover { transform: translateY(-12px); border-color: #1e40af; box-shadow: 0 25px 50px rgba(0,0,0,0.08); }
-      .interactive-card h4 { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 12px; font-weight: 800; letter-spacing: 1.5px; }
-      .interactive-card h2 { font-family: 'Archivo'; font-size: 3.5rem; color: #1e40af; margin: 0; line-height: 1; }
+
+      .btn-primary-action {
+        padding: 14px 28px; 
+        border-radius: 12px; 
+        border: none; 
+        background: #facc15; 
+        color: #04060d; 
+        font-weight: 800; 
+        cursor: pointer; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        gap: 8px; 
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary-action:hover {
+        background: #ffe066;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(250, 204, 21, 0.25);
+      }
+
+      .btn-secondary-action {
+        padding: 14px 28px; 
+        border-radius: 12px; 
+        border: 1px solid rgba(255, 255, 255, 0.15); 
+        background: rgba(4, 6, 13, 0.6); 
+        color: white; 
+        font-weight: 700; 
+        cursor: pointer; 
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+
+      .btn-secondary-action:hover {
+        border-color: #facc15;
+        color: #facc15;
+        background: rgba(4, 6, 13, 0.9);
+      }
+
+      .stat-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+        gap: 20px; 
+      }
+
+      .interactive-card { 
+        background: rgba(15, 23, 42, 0.65); 
+        backdrop-filter: blur(16px);
+        padding: 32px 20px; 
+        border-radius: 20px; 
+        border: 1px solid rgba(255, 255, 255, 0.08); 
+        text-align: center; 
+        cursor: pointer; 
+        transition: all 0.3s ease;
+      }
+
+      .interactive-card:hover { 
+        transform: translateY(-6px); 
+        border-color: #facc15; 
+        box-shadow: 0 10px 30px rgba(250, 204, 21, 0.1); 
+      }
+
+      .interactive-card h4 { 
+        color: #94a3b8; 
+        font-family: 'Cinzel', serif;
+        font-size: 0.7rem; 
+        text-transform: uppercase; 
+        margin: 0 0 10px 0; 
+        font-weight: 700; 
+        letter-spacing: 1.5px; 
+      }
+
+      .interactive-card h2 { 
+        font-family: 'Bebas Neue', cursive; 
+        font-size: clamp(3rem, 5vw, 3.8rem); 
+        color: #facc15; 
+        margin: 0; 
+        line-height: 1; 
+      }
+
+      @media (max-width: 640px) {
+        .action-banner {
+          padding: 30px 20px;
+          border-radius: 20px;
+        }
+        .action-btns-wrapper {
+          flex-direction: column;
+          width: 100%;
+        }
+        .btn-primary-action, .btn-secondary-action {
+          width: 100%;
+        }
+        .stat-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        .interactive-card {
+          padding: 24px 15px;
+          border-radius: 16px;
+        }
+      }
     `}</style>
     
     <div className="action-banner">
-      <h3 style={{fontFamily: 'Archivo', fontSize: '2.2rem', margin: '0 0 20px 0', textTransform: 'capitalize', letterSpacing: '-1px'}}>Administrative Hub</h3>
-      <p style={{opacity: 0.9, fontSize: '1.15rem', maxWidth: '750px', margin: '0 auto 40px', lineHeight: '1.6', fontWeight: 500}}>
+      <h3 style={{
+        fontFamily: 'Bebas Neue', 
+        fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', 
+        margin: '0 0 12px 0', 
+        letterSpacing: '1px'
+      }}>
+        Administrative Hub
+      </h3>
+      <p style={{
+        color: '#94a3b8', 
+        fontSize: 'clamp(0.9rem, 2vw, 1.05rem)', 
+        maxWidth: '700px', 
+        margin: '0 auto 30px', 
+        lineHeight: '1.6', 
+        fontWeight: 500
+      }}>
         Direct access to the league database. All changes made to fixtures, news, or player records will be synchronized with the public website immediately.
       </p>
-      <div style={{display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap'}}>
-        <button onClick={() => setTab('results')} style={{padding: '18px 40px', borderRadius: '18px', border: 'none', background: '#facc15', color: '#1e40af', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.1rem'}}>Record Results <ChevronRight size={20}/></button>
-        <button onClick={() => setTab('fixtures')} style={{padding: '18px 40px', borderRadius: '18px', border: '2px solid rgba(255,255,255,0.5)', background: 'transparent', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '1.1rem'}}>Schedule Fixtures</button>
+      <div className="action-btns-wrapper" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <button onClick={() => setTab('results')} className="btn-primary-action">
+          Record Results <ChevronRight size={18}/>
+        </button>
+        <button onClick={() => setTab('fixtures')} className="btn-secondary-action">
+          Schedule Fixtures
+        </button>
       </div>
     </div>
 
@@ -256,7 +589,7 @@ const Overview = ({ stats, loading, setTab }) => (
         <h4>League News</h4>
         <h2>{loading ? '..' : stats.news}</h2>
       </div>
-      <div className="interactive-card" style={{borderBottom: '8px solid #facc15'}} onClick={() => setTab('inbox')}>
+      <div className="interactive-card" style={{ borderBottom: '3px solid #facc15' }} onClick={() => setTab('inbox')}>
         <h4>Fan Inbox</h4>
         <h2>{loading ? '..' : stats.messages}</h2>
       </div>

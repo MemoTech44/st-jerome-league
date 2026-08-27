@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { 
-  Calendar, MapPin, Loader2, AlertCircle, Clock, ChevronRight, LayoutGrid
+  Calendar, MapPin, Loader2, AlertCircle, Clock, LayoutGrid
 } from 'lucide-react';
 
 const Fixtures = () => {
@@ -63,9 +63,11 @@ const Fixtures = () => {
 
   if (loading) {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-        <Loader2 className="animate-spin" size={48} color="#1e3a8a" />
-        <p style={{ marginTop: '20px', fontWeight: 800, color: '#1e3a8a', letterSpacing: '1px', fontFamily: 'Plus Jakarta Sans' }}>SYNCING SCHEDULE...</p>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#04060d' }}>
+        <Loader2 className="animate-spin" size={48} color="#facc15" />
+        <p style={{ marginTop: '20px', fontWeight: 800, color: '#facc15', letterSpacing: '2px', fontFamily: 'Plus Jakarta Sans', fontSize: '0.85rem' }}>
+          SYNCING SCHEDULE...
+        </p>
       </div>
     );
   }
@@ -73,72 +75,229 @@ const Fixtures = () => {
   return (
     <div className="fixtures-page">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-        .fixtures-page { background: #f8fafc; min-height: 100vh; padding: 140px 5% 100px; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .container { max-width: 900px; margin: 0 auto; }
-        
-        /* Header & Selectors */
-        .header-box { text-align: center; margin-bottom: 50px; }
-        .header-box h1 { font-size: clamp(2.5rem, 6vw, 3.5rem); color: #1e3a8a; font-weight: 800; letter-spacing: -2px; margin-bottom: 25px; }
-        
-        .selector-wrapper { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-bottom: 40px; }
-        
-        .season-selector { display: flex; gap: 8px; background: white; padding: 6px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .season-pill { padding: 10px 20px; border-radius: 14px; border: none; background: transparent; cursor: pointer; font-weight: 800; color: #64748b; transition: 0.3s; font-size: 0.75rem; }
-        .season-pill.active { background: #1e3a8a; color: white; }
-
-        .filter-container { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .filter-btn { 
-          padding: 10px 18px; border-radius: 12px; border: 1px solid #e2e8f0; background: white; 
-          font-weight: 700; color: #64748b; cursor: pointer; font-size: 0.75rem; transition: 0.2s; 
+        .fixtures-page { 
+          background: #04060d; 
+          min-height: 100vh; 
+          padding: 120px 5% 100px; 
+          font-family: 'Plus Jakarta Sans', sans-serif; 
+          color: #f8fafc;
+          box-sizing: border-box;
         }
-        .filter-btn:hover { border-color: #facc15; }
-        .filter-btn.active { background: #facc15; color: #1e3a8a; border-color: #facc15; box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2); }
+
+        .container { max-width: 920px; margin: 0 auto; }
+        .gold-text { color: #facc15; }
+        
+        /* Header Box */
+        .header-box { text-align: center; margin-bottom: 45px; }
+
+        .header-tag {
+          font-family: 'Cinzel', serif;
+          color: #facc15;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          display: block;
+          margin-bottom: 8px;
+        }
+
+        .header-box h1 { 
+          font-family: 'Bebas Neue', cursive;
+          font-size: clamp(3rem, 7vw, 4.8rem); 
+          color: #ffffff; 
+          letter-spacing: 2px; 
+          margin: 0 0 25px 0; 
+          line-height: 1;
+        }
+        
+        .selector-wrapper { 
+          display: flex; 
+          flex-direction: column; 
+          gap: 16px; 
+          align-items: center; 
+        }
+        
+        /* Season Selector */
+        .season-selector { 
+          display: flex; 
+          gap: 6px; 
+          background: rgba(15, 23, 42, 0.8); 
+          padding: 6px; 
+          border-radius: 20px; 
+          border: 1px solid rgba(255, 255, 255, 0.08); 
+          box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        }
+
+        .season-pill { 
+          padding: 10px 22px; 
+          border-radius: 14px; 
+          border: none; 
+          background: transparent; 
+          cursor: pointer; 
+          font-weight: 800; 
+          color: #94a3b8; 
+          transition: all 0.3s ease; 
+          font-size: 0.75rem; 
+          letter-spacing: 0.5px;
+        }
+
+        .season-pill:hover { color: #ffffff; }
+
+        .season-pill.active { 
+          background: #facc15; 
+          color: #04060d; 
+          box-shadow: 0 4px 15px rgba(250, 204, 21, 0.25);
+        }
+
+        /* Matchday Filter */
+        .filter-container { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+        .filter-btn { 
+          padding: 10px 18px; 
+          border-radius: 14px; 
+          border: 1px solid rgba(255, 255, 255, 0.08); 
+          background: rgba(15, 23, 42, 0.6); 
+          font-weight: 700; 
+          color: #94a3b8; 
+          cursor: pointer; 
+          font-size: 0.75rem; 
+          transition: all 0.2s ease; 
+          display: flex;
+          align-items: center;
+        }
+
+        .filter-btn:hover { 
+          border-color: rgba(250, 204, 21, 0.4); 
+          color: #ffffff;
+        }
+
+        .filter-btn.active { 
+          background: rgba(250, 204, 21, 0.12); 
+          color: #facc15; 
+          border-color: rgba(250, 204, 21, 0.4); 
+          box-shadow: 0 4px 15px rgba(250, 204, 21, 0.1); 
+        }
 
         /* Matchday Grouping */
-        .md-section { margin-bottom: 60px; }
-        .md-header { text-align: center; margin-bottom: 30px; }
-        .md-badge { background: #1e3a8a; color: white; padding: 8px 24px; border-radius: 30px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; }
-        .md-meta { display: flex; justify-content: center; gap: 20px; margin-top: 15px; color: #94a3b8; font-weight: 700; font-size: 0.85rem; }
+        .md-section { margin-bottom: 50px; }
+        .md-header { text-align: center; margin-bottom: 25px; }
+
+        .md-badge { 
+          font-family: 'Cinzel', serif;
+          background: linear-gradient(135deg, rgba(250, 204, 21, 0.2), rgba(250, 204, 21, 0.05)); 
+          color: #facc15; 
+          padding: 8px 24px; 
+          border-radius: 30px; 
+          font-weight: 700; 
+          font-size: 0.8rem; 
+          text-transform: uppercase; 
+          letter-spacing: 2px; 
+          border: 1px solid rgba(250, 204, 21, 0.3);
+          display: inline-block;
+        }
+
+        .md-meta { 
+          display: flex; 
+          justify-content: center; 
+          gap: 20px; 
+          margin-top: 14px; 
+          color: #94a3b8; 
+          font-weight: 600; 
+          font-size: 0.85rem; 
+        }
 
         /* Match Cards */
         .match-card {
-          background: white; border-radius: 32px; padding: 25px 40px; margin-bottom: 12px;
-          display: grid; grid-template-columns: 1fr 120px 1fr; align-items: center;
-          border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.03); transition: 0.3s;
+          background: rgba(15, 23, 42, 0.6); 
+          backdrop-filter: blur(12px);
+          border-radius: 24px; 
+          padding: 22px 35px; 
+          margin-bottom: 12px;
+          display: grid; 
+          grid-template-columns: 1fr 110px 1fr; 
+          align-items: center;
+          border: 1px solid rgba(255, 255, 255, 0.08); 
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+          transition: all 0.3s ease;
         }
-        .match-card:hover { transform: scale(1.01); border-color: #cbd5e1; }
 
-        .team { display: flex; align-items: center; gap: 20px; }
+        .match-card:hover { 
+          transform: translateY(-2px); 
+          border-color: rgba(250, 204, 21, 0.3); 
+          box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+        }
+
+        .team { display: flex; align-items: center; gap: 18px; }
         .team.home { justify-content: flex-end; text-align: right; }
         .team.away { justify-content: flex-start; text-align: left; }
         
-        .team-name { font-weight: 800; color: #1e293b; font-size: 1.1rem; text-transform: uppercase; }
-        .logo-frame { 
-          width: 60px; height: 60px; background: #f8fafc; border-radius: 18px; 
-          padding: 8px; display: flex; align-items: center; justify-content: center; 
-          border: 1px solid #f1f5f9; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        .team-name { 
+          font-family: 'Bebas Neue', cursive;
+          font-size: 1.4rem; 
+          color: #ffffff; 
+          letter-spacing: 1px;
         }
+
+        .logo-frame { 
+          width: 54px; 
+          height: 54px; 
+          background: #04060d; 
+          border-radius: 16px; 
+          padding: 8px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          border: 1px solid rgba(250, 204, 21, 0.2); 
+          flex-shrink: 0; 
+          box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
         .logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        .center-divider { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; border-left: 2px solid #f1f5f9; border-right: 2px solid #f1f5f9; }
-        .time-val { font-size: 1.4rem; font-weight: 800; color: #1e3a8a; letter-spacing: -1px; }
-        .vs-tag { font-size: 0.65rem; font-weight: 900; color: #facc15; text-transform: uppercase; letter-spacing: 1px; }
+        .center-divider { 
+          text-align: center; 
+          display: flex; 
+          flex-direction: column; 
+          align-items: center; 
+          gap: 4px; 
+          padding: 0 10px;
+          border-left: 1px solid rgba(255, 255, 255, 0.06); 
+          border-right: 1px solid rgba(255, 255, 255, 0.06); 
+        }
+
+        .time-val { 
+          font-family: 'Bebas Neue', cursive;
+          font-size: 1.6rem; 
+          color: #facc15; 
+          letter-spacing: 1px; 
+          line-height: 1;
+        }
+
+        .vs-tag { 
+          font-size: 0.65rem; 
+          font-weight: 900; 
+          color: #64748b; 
+          text-transform: uppercase; 
+          letter-spacing: 1px; 
+        }
 
         @media (max-width: 768px) {
-          .match-card { grid-template-columns: 1fr 80px 1fr; padding: 20px 15px; border-radius: 24px; }
+          .fixtures-page { padding-top: 100px; }
+          .match-card { grid-template-columns: 1fr 75px 1fr; padding: 18px 12px; border-radius: 20px; }
           .team { gap: 10px; }
-          .team-name { font-size: 0.75rem; }
-          .logo-frame { width: 45px; height: 45px; border-radius: 12px; }
-          .time-val { font-size: 1.1rem; }
-          .md-meta { font-size: 0.75rem; gap: 10px; }
+          .team-name { font-size: 1rem; line-height: 1.1; }
+          .logo-frame { width: 40px; height: 40px; border-radius: 12px; padding: 6px; }
+          .time-val { font-size: 1.2rem; }
+          .md-meta { font-size: 0.75rem; gap: 12px; flex-wrap: wrap; }
         }
       `}</style>
 
       <div className="container">
         <header className="header-box">
-          <h1>Match Schedule</h1>
+          <span className="header-tag">League Schedule</span>
+          <h1>MATCH <span className="gold-text">FIXTURES</span></h1>
           
           <div className="selector-wrapper">
             <div className="season-selector">
@@ -158,7 +317,7 @@ const Fixtures = () => {
                 className={`filter-btn ${selectedMatchday === 'All' ? 'active' : ''}`} 
                 onClick={() => setSelectedMatchday('All')}
               >
-                <LayoutGrid size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }}/> Full Roster
+                <LayoutGrid size={13} style={{ marginRight: '6px' }}/> Full Roster
               </button>
               {availableMatchdays.map(md => (
                 <button 
@@ -174,10 +333,10 @@ const Fixtures = () => {
         </header>
 
         {fixtures.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 20px', background: 'white', borderRadius: '40px', border: '1px solid #e2e8f0' }}>
-            <AlertCircle size={50} color="#cbd5e1" style={{ marginBottom: '20px' }}/>
-            <h3 style={{ fontWeight: 800, color: '#1e3a8a', marginBottom: '10px' }}>No Fixtures Found</h3>
-            <p style={{ color: '#94a3b8', fontWeight: 600 }}>The schedule for {selectedSeason} hasn't been released yet.</p>
+          <div style={{ textAlign: 'center', padding: '80px 20px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '32px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <AlertCircle size={48} className="gold-text" style={{ marginBottom: '15px' }}/>
+            <h3 style={{ fontFamily: 'Bebas Neue', fontSize: '1.8rem', color: '#ffffff', margin: '0 0 5px 0' }}>No Fixtures Found</h3>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>The schedule for {selectedSeason} hasn't been released yet.</p>
           </div>
         ) : (
           Object.keys(groupedByMatchday).sort((a,b) => Number(a)-Number(b)).map(md => (
@@ -185,8 +344,8 @@ const Fixtures = () => {
               <div className="md-header">
                 <span className="md-badge">Matchday {md}</span>
                 <div className="md-meta">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} color="#facc15"/> {groupedByMatchday[md][0].venue}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={16} color="#facc15"/> {groupedByMatchday[md][0].date}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={15} color="#facc15"/> {groupedByMatchday[md][0].venue}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={15} color="#facc15"/> {groupedByMatchday[md][0].date}</span>
                 </div>
               </div>
 
@@ -197,8 +356,8 @@ const Fixtures = () => {
                     <span className="team-name">{match.homeTeam}</span>
                     <div className="logo-frame">
                       <img 
-                        src={teamLogos[match.homeTeam] || `https://ui-avatars.com/api/?name=${match.homeTeam}&background=f1f5f9&color=1e3a8a`} 
-                        alt="" 
+                        src={teamLogos[match.homeTeam] || `https://ui-avatars.com/api/?name=${match.homeTeam}&background=0f172a&color=facc15`} 
+                        alt={match.homeTeam} 
                         className="logo-img" 
                       />
                     </div>
@@ -208,8 +367,8 @@ const Fixtures = () => {
                   <div className="center-divider">
                     <span className="vs-tag">VS</span>
                     <span className="time-val">{match.time}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#94a3b8', fontSize: '0.6rem', fontWeight: 800 }}>
-                       <Clock size={10} /> LIVE
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748b', fontSize: '0.6rem', fontWeight: 800 }}>
+                       <Clock size={10} color="#facc15" /> UPCOMING
                     </div>
                   </div>
 
@@ -217,8 +376,8 @@ const Fixtures = () => {
                   <div className="team away">
                     <div className="logo-frame">
                       <img 
-                        src={teamLogos[match.awayTeam] || `https://ui-avatars.com/api/?name=${match.awayTeam}&background=f1f5f9&color=1e3a8a`} 
-                        alt="" 
+                        src={teamLogos[match.awayTeam] || `https://ui-avatars.com/api/?name=${match.awayTeam}&background=0f172a&color=facc15`} 
+                        alt={match.awayTeam} 
                         className="logo-img" 
                       />
                     </div>

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { auth } from '../firebase'; // Ensure your firebase.js is configured
+import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, Lock, Mail, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -28,60 +29,77 @@ const Login = () => {
 
   return (
     <>
+      <Helmet>
+        <title>Admin Portal | St. Jerome League</title>
+      </Helmet>
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@900&family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
         .login-page {
-          height: 100vh;
+          min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #f8fafc;
-          font-family: 'Inter', sans-serif;
-          padding: 20px;
+          background-color: #04060d;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          padding: 40px 20px;
+          box-sizing: border-box;
         }
 
         .login-card {
-          background: white;
+          background: rgba(15, 23, 42, 0.65);
+          backdrop-filter: blur(16px);
           width: 100%;
-          max-width: 450px;
-          border-radius: 12px;
-          box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
-          border: 1px solid #e2e8f0;
+          max-width: 440px;
+          border-radius: 24px;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           overflow: hidden;
         }
 
         .login-header {
-          background: #1e40af;
-          padding: 40px;
+          padding: 40px 30px 20px;
           text-align: center;
-          color: white;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .header-tag {
+          font-family: 'Cinzel', serif;
+          color: #facc15;
+          font-size: 0.75rem;
+          font-weight: 700;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          display: block;
+          margin-top: 12px;
         }
 
         .login-header h2 {
-          font-family: 'Archivo', sans-serif;
-          font-size: 2rem;
-          text-transform: uppercase;
-          margin: 10px 0 0;
-          letter-spacing: -1px;
+          font-family: 'Bebas Neue', cursive;
+          font-size: 2.4rem;
+          color: #ffffff;
+          letter-spacing: 1.5px;
+          margin: 4px 0 0;
+          line-height: 1;
         }
 
         .login-body {
-          padding: 40px;
+          padding: 32px 30px 40px;
         }
 
         .input-group {
-          margin-bottom: 20px;
-          position: relative;
+          margin-bottom: 22px;
         }
 
         .input-group label {
           display: block;
-          font-size: 0.75rem;
-          font-weight: 800;
-          text-transform: uppercase;
-          color: #64748b;
+          font-family: 'Cinzel', serif;
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: #facc15;
           margin-bottom: 8px;
+          text-transform: uppercase;
           letter-spacing: 1px;
         }
 
@@ -93,87 +111,103 @@ const Login = () => {
 
         .input-wrapper svg {
           position: absolute;
-          left: 12px;
-          color: #94a3b8;
+          left: 14px;
+          color: #64748b;
+          transition: color 0.3s ease;
         }
 
-        .input-wrapper input {
+        .c-input {
           width: 100%;
-          padding: 12px 12px 12px 40px;
-          border: 2px solid #f1f5f9;
-          border-radius: 8px;
-          font-size: 1rem;
-          transition: 0.3s;
+          background: rgba(4, 6, 13, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 14px 14px 14px 44px;
+          border-radius: 12px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-weight: 600;
+          font-size: 0.95rem;
           outline: none;
+          transition: all 0.3s ease;
+          color: #ffffff;
+          box-sizing: border-box;
         }
 
-        .input-wrapper input:focus {
-          border-color: #1e40af;
-          background: #f8fafc;
+        .c-input:focus {
+          border-color: #facc15;
+          background: rgba(4, 6, 13, 0.9);
+          box-shadow: 0 0 15px rgba(250, 204, 21, 0.15);
+        }
+
+        .c-input:focus + svg,
+        .input-wrapper:focus-within svg {
+          color: #facc15;
         }
 
         .error-msg {
-          background: #fef2f2;
-          color: #dc2626;
-          padding: 12px;
-          border-radius: 6px;
+          background: rgba(220, 38, 38, 0.1);
+          color: #f87171;
+          padding: 12px 16px;
+          border-radius: 10px;
           font-size: 0.85rem;
           font-weight: 600;
           margin-bottom: 20px;
-          border-left: 4px solid #dc2626;
+          border: 1px solid rgba(220, 38, 38, 0.2);
+          text-align: center;
         }
 
         .login-btn {
           width: 100%;
           padding: 16px;
-          background: #1e40af;
-          color: white;
+          background: #facc15;
+          color: #04060d;
           border: none;
-          border-radius: 8px;
-          font-family: 'Archivo', sans-serif;
-          font-weight: 900;
-          font-size: 1rem;
+          border-radius: 12px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-weight: 800;
+          font-size: 0.85rem;
           text-transform: uppercase;
+          letter-spacing: 1px;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 10px;
-          transition: 0.3s;
+          transition: all 0.3s ease;
         }
 
-        .login-btn:hover {
-          background: #1e3a8a;
+        .login-btn:hover:not(:disabled) {
+          background: #ffe066;
           transform: translateY(-2px);
-          box-shadow: 0 10px 20px rgba(30, 64, 175, 0.2);
+          box-shadow: 0 6px 20px rgba(250, 204, 21, 0.25);
         }
 
         .login-btn:disabled {
-          background: #94a3b8;
+          opacity: 0.6;
           cursor: not-allowed;
         }
 
         .back-home {
-          display: block;
+          display: inline-block;
+          width: 100%;
           text-align: center;
-          margin-top: 25px;
+          margin-top: 22px;
           color: #64748b;
           text-decoration: none;
           font-size: 0.85rem;
           font-weight: 600;
+          transition: color 0.3s ease;
         }
 
         .back-home:hover {
-          color: #1e40af;
+          color: #facc15;
         }
       `}</style>
 
       <div className="login-page">
         <div className="login-card">
           <div className="login-header">
-            <ShieldCheck size={48} color="#facc15" style={{ margin: '0 auto' }} />
+            <ShieldCheck size={44} color="#facc15" style={{ margin: '0 auto' }} />
+            <span className="header-tag">St. Jerome League</span>
             <h2>Admin Portal</h2>
-            <p style={{ opacity: 0.8, fontSize: '0.9rem' }}>St. Jerome League Management</p>
           </div>
 
           <div className="login-body">
@@ -186,6 +220,7 @@ const Login = () => {
                   <Mail size={18} />
                   <input 
                     type="email" 
+                    className="c-input"
                     placeholder="name@league.com" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -200,6 +235,7 @@ const Login = () => {
                   <Lock size={18} />
                   <input 
                     type="password" 
+                    className="c-input"
                     placeholder="••••••••" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -209,8 +245,17 @@ const Login = () => {
               </div>
 
               <button type="submit" className="login-btn" disabled={loading}>
-                {loading ? "Verifying..." : "Enter Dashboard"}
-                <ArrowRight size={20} />
+                {loading ? (
+                  <>
+                    <span>Verifying...</span>
+                    <Loader2 className="animate-spin" size={18} />
+                  </>
+                ) : (
+                  <>
+                    <span>Enter Dashboard</span>
+                    <ArrowRight size={18} />
+                  </>
+                )}
               </button>
             </form>
 

@@ -8,7 +8,8 @@ import {
   Calendar,
   ChevronRight,
   X,
-  Zap
+  Zap,
+  Newspaper
 } from 'lucide-react';
 
 const News = () => {
@@ -58,16 +59,18 @@ const News = () => {
 
   const getImageUrl = (url) => {
     if (!url || url.includes('via.placeholder')) {
-      return `https://placehold.co/600x400/1e3a8a/facc15?text=News+Update`;
+      return `https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80`;
     }
     return url;
   };
 
   if (loading) {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-        <Loader2 className="animate-spin" size={48} color="#1e3a8a" />
-        <p style={{ marginTop: '20px', fontWeight: 800, color: '#1e3a8a', letterSpacing: '1px', fontFamily: 'Plus Jakarta Sans' }}>REFRESHING FEED...</p>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#04060d' }}>
+        <Loader2 className="animate-spin" size={48} color="#facc15" />
+        <p style={{ marginTop: '20px', fontWeight: 800, color: '#facc15', letterSpacing: '2px', fontFamily: 'Plus Jakarta Sans', fontSize: '0.85rem' }}>
+          REFRESHING LEAGUE FEED...
+        </p>
       </div>
     );
   }
@@ -78,99 +81,320 @@ const News = () => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-        .news-page { background-color: #f8fafc; padding: 140px 5% 100px; min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .news-page { 
+          background-color: #04060d; 
+          padding: 120px 5% 100px; 
+          min-height: 100vh; 
+          font-family: 'Plus Jakarta Sans', sans-serif; 
+          color: #f8fafc;
+          box-sizing: border-box;
+        }
+
         .container { max-width: 1100px; margin: 0 auto; }
         
+        .gold-text { color: #facc15; }
+
         /* Header Styling */
-        .header-box { text-align: center; margin-bottom: 60px; }
-        .header-box h1 { font-size: clamp(2.5rem, 6vw, 3.5rem); color: #1e3a8a; font-weight: 800; letter-spacing: -1.5px; margin: 0; }
-        .header-underline { width: 60px; height: 5px; background: #facc15; margin: 20px auto; border-radius: 10px; }
+        .header-box { text-align: center; margin-bottom: 50px; }
+        
+        .header-tag {
+          font-family: 'Cinzel', serif;
+          color: #facc15;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          display: block;
+          margin-bottom: 8px;
+        }
+
+        .header-box h1 { 
+          font-family: 'Bebas Neue', cursive;
+          font-size: clamp(3rem, 7vw, 4.8rem); 
+          color: #ffffff; 
+          letter-spacing: 2px; 
+          margin: 0; 
+          line-height: 1;
+        }
+
+        .header-underline { 
+          width: 80px; 
+          height: 4px; 
+          background: linear-gradient(90deg, #facc15, rgba(250, 204, 21, 0.2)); 
+          margin: 20px auto 25px; 
+          border-radius: 4px; 
+        }
+
         .header-description { 
-            max-width: 750px; 
-            margin: 0 auto; 
-            color: #64748b; 
-            line-height: 1.8; 
-            font-size: 1.1rem; 
-            font-weight: 500;
+          max-width: 720px; 
+          margin: 0 auto; 
+          color: #94a3b8; 
+          line-height: 1.7; 
+          font-size: 1rem; 
+          font-weight: 500;
         }
 
         /* Hero Card */
         .featured-hero { 
-          display: grid; grid-template-columns: 1.2fr 0.8fr; background: white; 
-          border-radius: 32px; overflow: hidden; margin-bottom: 50px; 
-          border: 1px solid #e2e8f0; cursor: pointer; transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-          box-shadow: 0 15px 40px -15px rgba(0,0,0,0.08);
+          display: grid; 
+          grid-template-columns: 1.2fr 0.8fr; 
+          background: rgba(15, 23, 42, 0.6); 
+          backdrop-filter: blur(12px);
+          border-radius: 28px; 
+          overflow: hidden; 
+          margin-bottom: 60px; 
+          border: 1px solid rgba(255, 255, 255, 0.08); 
+          cursor: pointer; 
+          transition: all 0.35s ease;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
-        .featured-hero:hover { transform: translateY(-5px); border-color: #1e3a8a; }
-        .featured-img { height: 450px; background: #1e293b; overflow: hidden; }
-        .featured-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s ease; }
+
+        .featured-hero:hover { 
+          transform: translateY(-6px); 
+          border-color: rgba(250, 204, 21, 0.5); 
+          box-shadow: 0 20px 40px rgba(250, 204, 21, 0.12);
+        }
+
+        .featured-img { 
+          height: 100%; 
+          min-height: 380px;
+          background: #0f172a; 
+          overflow: hidden; 
+          position: relative;
+        }
+
+        .featured-img img { 
+          width: 100%; 
+          height: 100%; 
+          object-fit: cover; 
+          transition: transform 0.6s ease; 
+        }
+
+        .featured-hero:hover .featured-img img {
+          transform: scale(1.05);
+        }
+
+        .featured-content {
+          padding: 40px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
         
-        .trending-badge { background: #1e3a8a; color: #facc15; padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 6px; width: fit-content; margin-bottom: 20px; }
+        .trending-badge { 
+          background: rgba(250, 204, 21, 0.12); 
+          color: #facc15; 
+          border: 1px solid rgba(250, 204, 21, 0.3);
+          padding: 6px 14px; 
+          border-radius: 50px; 
+          font-size: 0.75rem; 
+          font-weight: 800; 
+          display: flex; 
+          align-items: center; 
+          gap: 6px; 
+          width: fit-content; 
+          margin-bottom: 20px; 
+          letter-spacing: 1px;
+        }
+
+        .featured-content h2 {
+          font-family: 'Bebas Neue', cursive;
+          font-size: 2.2rem;
+          color: #ffffff;
+          letter-spacing: 1px;
+          line-height: 1.1;
+          margin: 0 0 15px 0;
+        }
 
         /* Grid Cards */
-        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
-        .news-card { background: white; border-radius: 28px; overflow: hidden; border: 1px solid #e2e8f0; transition: 0.3s ease; cursor: pointer; display: flex; flex-direction: column; }
-        .news-card:hover { transform: translateY(-10px); border-color: #1e3a8a; box-shadow: 0 20px 40px -20px rgba(30, 58, 138, 0.15); }
-        .card-img { height: 220px; background: #f1f5f9; overflow: hidden; }
-        .card-img img { width: 100%; height: 100%; object-fit: cover; }
-        .card-body { padding: 30px; flex-grow: 1; }
+        .news-grid { 
+          display: grid; 
+          grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); 
+          gap: 28px; 
+        }
 
-        /* Modal & Scrollbar Removal */
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .modal-container { background: white; width: 100%; max-width: 700px; max-height: 85vh; border-radius: 32px; overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        .news-card { 
+          background: rgba(15, 23, 42, 0.6); 
+          backdrop-filter: blur(12px);
+          border-radius: 24px; 
+          overflow: hidden; 
+          border: 1px solid rgba(255, 255, 255, 0.08); 
+          transition: all 0.35s ease; 
+          cursor: pointer; 
+          display: flex; 
+          flex-direction: column; 
+          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .news-card:hover { 
+          transform: translateY(-8px); 
+          border-color: rgba(250, 204, 21, 0.5); 
+          box-shadow: 0 15px 35px rgba(250, 204, 21, 0.1); 
+          background: rgba(15, 23, 42, 0.85);
+        }
+
+        .card-img { 
+          height: 200px; 
+          background: #0f172a; 
+          overflow: hidden; 
+          position: relative;
+        }
+
+        .card-img img { 
+          width: 100%; 
+          height: 100%; 
+          object-fit: cover; 
+          transition: transform 0.5s ease;
+        }
+
+        .news-card:hover .card-img img {
+          transform: scale(1.06);
+        }
+
+        .card-body { 
+          padding: 25px; 
+          flex-grow: 1; 
+          display: flex;
+          flex-direction: column;
+        }
+
+        .card-category {
+          color: #facc15; 
+          font-weight: 800; 
+          font-size: 0.7rem; 
+          text-transform: uppercase; 
+          letter-spacing: 1px;
+          margin-bottom: 8px;
+          display: block;
+        }
+
+        .card-title {
+          font-family: 'Bebas Neue', cursive;
+          font-size: 1.6rem;
+          color: #ffffff;
+          letter-spacing: 0.8px;
+          line-height: 1.2;
+          margin: 0 0 15px 0;
+        }
+
+        .read-more-btn {
+          margin-top: auto;
+          display: flex; 
+          align-items: center; 
+          gap: 6px; 
+          color: #facc15; 
+          font-weight: 800; 
+          font-size: 0.8rem;
+          letter-spacing: 0.5px;
+          transition: gap 0.2s ease;
+        }
+
+        .news-card:hover .read-more-btn {
+          gap: 10px;
+        }
+
+        /* Modal Styling */
+        .modal-backdrop { 
+          position: fixed; 
+          inset: 0; 
+          background: rgba(4, 6, 13, 0.88); 
+          backdrop-filter: blur(10px); 
+          z-index: 9999; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          padding: 20px; 
+        }
+
+        .modal-container { 
+          background: #0f172a; 
+          color: #f8fafc;
+          width: 100%; 
+          max-width: 720px; 
+          max-height: 85vh; 
+          border-radius: 28px; 
+          overflow: hidden; 
+          position: relative; 
+          display: flex; 
+          flex-direction: column; 
+          border: 1px solid rgba(250, 204, 21, 0.3);
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8); 
+        }
         
         .modal-scroll { 
-            overflow-y: auto; 
-            padding-bottom: 40px;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
+          overflow-y: auto; 
+          padding-bottom: 40px;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
         }
-        .modal-scroll::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
+
+        .modal-scroll::-webkit-scrollbar { display: none; }
+
+        .close-btn {
+          position: absolute;
+          top: 18px;
+          right: 18px;
+          background: rgba(15, 23, 42, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+          width: 38px;
+          height: 38px;
+          z-index: 10;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+          background: #facc15;
+          color: #04060d;
         }
 
         @media (max-width: 900px) {
           .featured-hero { grid-template-columns: 1fr; }
-          .featured-img { height: 260px; }
+          .featured-img { height: 250px; min-height: auto; }
+          .featured-content { padding: 30px 25px; }
         }
       `}</style>
 
       <div className="news-page">
         <div className="container">
           <header className="header-box">
-            <h1>League Press</h1>
+            <span className="header-tag">Official Press & Updates</span>
+            <h1>LEAGUE <span className="gold-text">PRESS</span></h1>
             <div className="header-underline"></div>
             <p className="header-description">
-                Welcome to the official news hub of the St. Jerome Alumni League. Here, we bring you the latest 
-                match reports, exclusive player interviews, and critical board announcements as they happen. 
-                Whether you're looking for tactical breakdowns of the weekend's biggest fixtures or updates 
-                on upcoming community events and transfer news, stay connected with our live feed to never 
-                miss a beat in the championship race.
+              Welcome to the official news hub of the St. Jerome Alumni League. Stay up to date 
+              with live match reports, tactical breakdowns, community updates, and board announcements.
             </p>
           </header>
 
           {articles.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 20px', background: 'white', borderRadius: '32px', border: '1px solid #e2e8f0' }}>
-              <AlertCircle size={48} color="#cbd5e1" style={{ marginBottom: '20px' }} />
-              <p style={{ color: '#1e3a8a', fontWeight: 800 }}>No news published yet.</p>
+            <div style={{ textAlign: 'center', padding: '80px 20px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '28px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <AlertCircle size={48} className="gold-text" style={{ marginBottom: '15px' }} />
+              <p style={{ color: '#ffffff', fontWeight: 700, margin: 0 }}>No news published yet.</p>
             </div>
           ) : (
             <>
               {featured && (
                 <div className="featured-hero" onClick={() => setSelectedArticle(featured)}>
                   <div className="featured-img">
-                    <img src={getImageUrl(featured.image || featured.imageUrl)} alt="" />
+                    <img src={getImageUrl(featured.image || featured.imageUrl)} alt={featured.title} />
                   </div>
-                  <div className="featured-content" style={{ padding: '40px' }}>
-                    <div className="trending-badge"><Zap size={14} fill="#facc15"/> FEATURED</div>
-                    <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e293b', marginBottom: '15px' }}>{featured.title}</h2>
-                    <p style={{ color: '#64748b', lineHeight: 1.6, marginBottom: '25px' }}>
-                      {featured.excerpt || featured.content?.substring(0, 140) + "..."}
+                  <div className="featured-content">
+                    <div className="trending-badge">
+                      <Zap size={13} fill="#facc15"/> FEATURED STORY
+                    </div>
+                    <h2>{featured.title}</h2>
+                    <p style={{ color: '#94a3b8', lineHeight: 1.6, marginBottom: '25px', fontSize: '0.9rem', fontWeight: 500 }}>
+                      {featured.excerpt || featured.content?.substring(0, 130) + "..."}
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1e3a8a', fontWeight: 800 }}>
-                      <Calendar size={16} color="#facc15"/> {featured.date}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#facc15', fontWeight: 700, fontSize: '0.85rem' }}>
+                      <Calendar size={15}/> {featured.date}
                     </div>
                   </div>
                 </div>
@@ -180,13 +404,13 @@ const News = () => {
                 {regular.map((article) => (
                   <div key={article.id} className="news-card" onClick={() => setSelectedArticle(article)}>
                     <div className="card-img">
-                      <img src={getImageUrl(article.image || article.imageUrl)} alt="" />
+                      <img src={getImageUrl(article.image || article.imageUrl)} alt={article.title} />
                     </div>
                     <div className="card-body">
-                      <span style={{ color: '#1e3a8a', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase' }}>{article.category || "General"}</span>
-                      <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b', margin: '12px 0 20px' }}>{article.title}</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#1e3a8a', fontWeight: 800, fontSize: '0.85rem' }}>
-                        READ MORE <ChevronRight size={16} color="#facc15" strokeWidth={3}/>
+                      <span className="card-category">{article.category || "General"}</span>
+                      <h3 className="card-title">{article.title}</h3>
+                      <div className="read-more-btn">
+                        READ ARTICLE <ChevronRight size={16} strokeWidth={3}/>
                       </div>
                     </div>
                   </div>
@@ -197,33 +421,35 @@ const News = () => {
         </div>
       </div>
 
+      {/* ARTICLE READER MODAL */}
       {selectedArticle && (
         <div className="modal-backdrop" onClick={handleBackdropClick}>
           <div className="modal-container">
-            <button 
-              onClick={() => setSelectedArticle(null)}
-              style={{ position: 'absolute', top: '20px', right: '20px', background: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', zIndex: 10, cursor: 'pointer', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <X size={24} color="#1e3a8a" />
+            <button className="close-btn" onClick={() => setSelectedArticle(null)}>
+              <X size={20} color="#ffffff" />
             </button>
             
             <div className="modal-scroll">
               <img 
                 src={getImageUrl(selectedArticle.image || selectedArticle.imageUrl)} 
-                style={{ width: '100%', height: '320px', objectFit: 'cover' }} 
-                alt="" 
+                style={{ width: '100%', height: '300px', objectFit: 'cover' }} 
+                alt={selectedArticle.title} 
               />
-              <div style={{ padding: '40px' }}>
-                <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
-                    <span style={{ background: '#eff6ff', color: '#1e3a8a', padding: '4px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800 }}>{selectedArticle.category}</span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Clock size={16} /> {selectedArticle.date}
-                    </span>
+              <div style={{ padding: '35px 30px' }}>
+                <div style={{ display: 'flex', gap: '15px', marginBottom: '18px', alignItems: 'center' }}>
+                  <span style={{ background: 'rgba(250, 204, 21, 0.1)', color: '#facc15', padding: '5px 12px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 800, border: '1px solid rgba(250, 204, 21, 0.25)', textTransform: 'uppercase' }}>
+                    {selectedArticle.category || 'General'}
+                  </span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={15} className="gold-text" /> {selectedArticle.date}
+                  </span>
                 </div>
-                <h2 style={{ fontSize: '2.2rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '25px', lineHeight: 1.1 }}>
+                
+                <h2 style={{ fontFamily: 'Bebas Neue, cursive', fontSize: '2.4rem', color: '#ffffff', marginBottom: '20px', lineHeight: 1.1, letterSpacing: '1px' }}>
                   {selectedArticle.title}
                 </h2>
-                <div style={{ color: '#475569', fontSize: '1.1rem', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+                
+                <div style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', fontWeight: 500 }}>
                   {selectedArticle.content}
                 </div>
               </div>
