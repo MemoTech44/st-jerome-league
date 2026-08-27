@@ -98,14 +98,12 @@ const PlayerManager = () => {
       const docInstance = new jsPDF();
       const currentDate = new Date().toLocaleString();
 
-      // Top Dark Banner Background for PDF
       docInstance.setFillColor(15, 23, 42);
       docInstance.rect(0, 0, docInstance.internal.pageSize.getWidth(), 35, 'F');
 
-      // Header Title Matching Theme
       docInstance.setFont("helvetica", "bold");
       docInstance.setFontSize(15);
-      docInstance.setTextColor(250, 204, 21); // Gold accent
+      docInstance.setTextColor(250, 204, 21);
       docInstance.text('ST. JEROME LEAGUE - OFFICIAL PLAYER ROSTER', 14, 18);
       
       docInstance.setFont("helvetica", "normal");
@@ -326,7 +324,6 @@ const PlayerManager = () => {
         }
       `}</style>
 
-      {/* Header Section */}
       <div className="header-section">
         <div>
           <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.8rem', margin: 0, letterSpacing: '0.5px' }}>Player & Stats Manager</h2>
@@ -341,7 +338,6 @@ const PlayerManager = () => {
         </button>
       </div>
 
-      {/* Filters Bar */}
       <div className="controls-wrapper">
         <div className="filter-group">
           <input 
@@ -365,7 +361,6 @@ const PlayerManager = () => {
         </div>
       </div>
 
-      {/* Players Table */}
       <div className="table-container">
         <table className="custom-table">
           <thead>
@@ -431,7 +426,6 @@ const PlayerManager = () => {
         </table>
       </div>
 
-      {/* Detailed Registration Info Modal */}
       {selectedPlayer && (
         <div className="modal-overlay" onClick={() => setSelectedPlayer(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -464,16 +458,12 @@ const PlayerManager = () => {
                 <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Sex</span>
                 <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.sex || 'N/A'}</p>
               </div>
-              <div>
-                <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Date of Birth</span>
-                <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.dob || 'Not Provided'}</p>
-              </div>
-              <div>
+              <div style={{ gridColumn: 'span 2' }}>
                 <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Years at St. Jerome</span>
-                <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.periodOfStudy || 'N/A'}</p>
+                <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.studyPeriod || selectedPlayer.periodOfStudy || 'N/A'}</p>
               </div>
               <div style={{ gridColumn: 'span 2' }}>
-                <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Contact Info</span>
+                <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: `800` }}>Contact Info</span>
                 <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.contact || 'N/A'}</p>
               </div>
             </div>
