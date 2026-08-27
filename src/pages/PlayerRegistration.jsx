@@ -451,7 +451,7 @@ const PlayerRegistration = () => {
                   <input 
                     className="r-input"
                     type="number" 
-                    placeholder="e.g. 10" 
+                    placeholder="e.g. NAT001" 
                     required 
                     value={formData.teamNumber}
                     onChange={e => setFormData({...formData, teamNumber: e.target.value})} 
