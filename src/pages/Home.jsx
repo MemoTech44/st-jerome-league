@@ -6,7 +6,7 @@ import { ArrowRight, Shield, Heart, Users } from 'lucide-react';
 
 // Assets
 import logo from '../assets/logo.jpeg';
-import fallImg from '../assets/WhatsApp Image 2026-04-16 at 11.04.17 AM.jpeg';
+import fallImg from '../assets/chris.jpeg';
 
 const Home = () => {
   const navigate = useNavigate();

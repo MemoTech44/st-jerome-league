@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db, storage } from '../firebase';
 import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -63,6 +64,7 @@ const CustomSelect = ({ label, value, options, onChange, placeholder }) => {
 };
 
 const PlayerRegistration = () => {
+  const navigate = useNavigate();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -71,8 +73,8 @@ const PlayerRegistration = () => {
     name: '',
     team: '',
     teamNumber: '',
+    position: '',
     sex: '',
-    dob: '',
     studyPeriod: '',
     contact: ''
   });
@@ -103,6 +105,7 @@ const PlayerRegistration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.team) return alert("Please select a team");
+    if (!formData.position) return alert("Please select a playing position");
     if (!formData.sex) return alert("Please select sex");
     if (!photo) return alert("Please upload your current passport photo");
     setLoading(true);
@@ -120,10 +123,15 @@ const PlayerRegistration = () => {
       });
 
       setSuccess(true);
+      
+      // Automatically redirect to home after 2.5 seconds
+      setTimeout(() => {
+        navigate('/');
+      }, 2500);
+
     } catch (error) {
       console.error("Submission error:", error);
       alert("Registration failed. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -401,13 +409,10 @@ const PlayerRegistration = () => {
             <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'rgba(250, 204, 21, 0.1)', border: '1px solid rgba(250, 204, 21, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
               <CheckCircle2 size={40} color="#facc15" />
             </div>
-            <h2>REGISTRATION SUBMITTED!</h2>
-            <p style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.95rem', marginBottom: '25px', lineHeight: 1.6 }}>
-              Your player profile has been submitted for verification. The league executive team will review your details shortly.
+            <h2>REGISTRATION SUCCESSFUL!</h2>
+            <p style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.95rem', marginBottom: '15px', lineHeight: 1.6 }}>
+              Your player profile has been submitted successfully. Redirecting you home...
             </p>
-            <button onClick={() => setSuccess(false)} className="btn-submit">
-              REGISTER ANOTHER PLAYER
-            </button>
           </div>
         ) : (
           <>
@@ -424,7 +429,7 @@ const PlayerRegistration = () => {
                 <input 
                   className="r-input"
                   type="text" 
-                  placeholder="e.g. John Bosco Mukasa" 
+                  placeholder="e.g. Atumanya Memory" 
                   required 
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})} 
@@ -442,7 +447,7 @@ const PlayerRegistration = () => {
                 />
 
                 <div className="input-group">
-                  <label>Team Number (Jersey #)</label>
+                  <label>Team Number</label>
                   <input 
                     className="r-input"
                     type="number" 
@@ -454,8 +459,21 @@ const PlayerRegistration = () => {
                 </div>
               </div>
 
-              {/* Sex and DOB */}
+              {/* Position and Sex */}
               <div className="grid-2">
+                <CustomSelect 
+                  label="Position"
+                  value={formData.position}
+                  options={[
+                    { value: 'Goalkeeper', label: 'Goalkeeper' },
+                    { value: 'Defender', label: 'Defender' },
+                    { value: 'Midfielder', label: 'Midfielder' },
+                    { value: 'Forward', label: 'Forward' }
+                  ]}
+                  onChange={val => setFormData({...formData, position: val})}
+                  placeholder="Select Position"
+                />
+
                 <CustomSelect 
                   label="Sex"
                   value={formData.sex}
@@ -466,17 +484,6 @@ const PlayerRegistration = () => {
                   onChange={val => setFormData({...formData, sex: val})}
                   placeholder="Select Sex"
                 />
-
-                <div className="input-group">
-                  <label>DOB (Optional)</label>
-                  <input 
-                    className="r-input"
-                    type="date" 
-                    style={{ colorScheme: 'dark' }}
-                    value={formData.dob}
-                    onChange={e => setFormData({...formData, dob: e.target.value})} 
-                  />
-                </div>
               </div>
 
               {/* Period of Study */}
