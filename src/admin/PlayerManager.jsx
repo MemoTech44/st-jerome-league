@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
+import { db, storage } from '../firebase';
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { Download, Search, Save, Trash2, Eye, X, Shield, Edit3 } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Download, Search, Save, Trash2, Eye, X, Shield, Edit3, Upload } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -26,6 +27,8 @@ const PlayerManager = () => {
     teamNumber: '',
     contact: ''
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
@@ -95,7 +98,17 @@ const PlayerManager = () => {
       teamNumber: player.teamNumber || '',
       contact: player.contact || ''
     });
+    setImageFile(null);
+    setImagePreview(player.photoUrl || '');
     setIsEditing(true);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
   const handleSaveEdit = async (e) => {
@@ -104,10 +117,19 @@ const PlayerManager = () => {
 
     setSavingEdit(true);
     try {
+      let finalPhotoUrl = editForm.photoUrl.trim();
+
+      // Handle image upload to Firebase Storage if a new file was selected
+      if (imageFile) {
+        const storageRef = ref(storage, `player-photos/${selectedPlayer.id}_${Date.now()}`);
+        const snapshot = await uploadBytes(storageRef, imageFile);
+        finalPhotoUrl = await getDownloadURL(snapshot.ref);
+      }
+
       const playerRef = doc(db, "players", selectedPlayer.id);
       const updatedData = {
         name: editForm.name.trim(),
-        photoUrl: editForm.photoUrl.trim(),
+        photoUrl: finalPhotoUrl,
         studyPeriod: editForm.studyPeriod.trim(),
         team: editForm.team,
         position: editForm.position,
@@ -571,14 +593,23 @@ const PlayerManager = () => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>Photo URL</label>
-                  <input 
-                    type="text" 
-                    value={editForm.photoUrl} 
-                    onChange={(e) => setEditForm({ ...editForm, photoUrl: e.target.value })} 
-                    className="input-style"
-                    style={{ width: '100%', boxSizing: 'border-box' }}
-                  />
+                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>Player Picture / Photo</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img 
+                      src={imagePreview || 'https://via.placeholder.com/80'} 
+                      alt="Preview" 
+                      style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #facc15' }} 
+                    />
+                    <label style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#0b1329', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '12px', cursor: 'pointer', fontSize: '0.8rem', color: '#facc15' }}>
+                      <Upload size={16} /> Upload New Photo
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleImageChange} 
+                        style={{ display: 'none' }} 
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 <div>
