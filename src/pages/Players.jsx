@@ -9,7 +9,6 @@ import {
   TrendingUp,
   Calendar,
   UserX,
-  X,
   ChevronRight
 } from 'lucide-react';
 
@@ -36,12 +35,17 @@ const Players = () => {
       try {
         const q = query(collection(db, "players"), orderBy("name", "asc"));
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          goals: parseInt(doc.data().goals || 0),
-          photo: doc.data().photoUrl || doc.data().photo || null 
-        }));
+        const data = snapshot.docs.map(doc => {
+          const rawData = doc.data();
+          return {
+            id: doc.id,
+            ...rawData,
+            goals: parseInt(rawData.goals || 0),
+            photo: rawData.photoUrl || rawData.photo || null,
+            // Added studyPeriod mapping to correctly catch the database field
+            yearsAtSchool: rawData.studyPeriod || rawData.yearsAtStJerome || rawData.years || rawData.years_at_st_jerome || rawData.classOf || null
+          };
+        });
         setPlayers(data);
         setFilteredPlayers(data);
       } catch (error) {
@@ -61,7 +65,7 @@ const Players = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase().trim();
       result = result.filter(p => 
-        p.name.toLowerCase().includes(term) ||
+        (p.name && p.name.toLowerCase().includes(term)) ||
         (p.team && p.team.toLowerCase().includes(term))
       );
     }
@@ -94,7 +98,6 @@ const Players = () => {
         .container { max-width: 1100px; margin: 0 auto; }
         .gold-text { color: #facc15; }
         
-        /* Header Box */
         .header-box { text-align: center; margin-bottom: 50px; }
         
         .header-tag {
@@ -134,7 +137,6 @@ const Players = () => {
           font-weight: 500;
         }
 
-        /* Controls Bar */
         .controls-bar { 
           display: flex; 
           flex-wrap: wrap; 
@@ -217,7 +219,6 @@ const Players = () => {
           border-color: rgba(250, 204, 21, 0.4);
         }
 
-        /* Table Design */
         .table-wrapper { 
           background: rgba(15, 23, 42, 0.6); 
           backdrop-filter: blur(12px);
@@ -273,7 +274,6 @@ const Players = () => {
           text-transform: uppercase;
         }
 
-        /* Modal Styling */
         .modal-overlay { 
           position: fixed; 
           inset: 0; 
@@ -320,8 +320,6 @@ const Players = () => {
           .filter-group { width: 100%; }
           .toggle-btn { flex: 1; justify-content: center; }
           .hide-on-mobile { display: none; }
-
-          /* Mobile minimal table view */
           td { padding: 16px 18px; }
           .player-identity { font-weight: 400; color: #e2e8f0; }
           .club-text { font-size: 0.85rem; font-weight: 400; color: #94a3b8; }
@@ -455,7 +453,7 @@ const Players = () => {
                     <Calendar size={18} className="gold-text" style={{ marginBottom: '6px' }} />
                     <span style={{ display: 'block', fontSize: '0.65rem', fontWeight: 800, color: '#facc15', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Years at St. Jerome</span>
                     <b style={{ fontSize: '0.85rem', color: '#ffffff', display: 'block', marginTop: '6px', fontWeight: 800, textTransform: 'uppercase' }}>
-                      {selectedPlayer.yearsAtStJerome || selectedPlayer.years || 'N/A'}
+                      {selectedPlayer.yearsAtSchool || 'N/A'}
                     </b>
                   </div>
                 </div>
