@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { Download, Search, Save, Trash2, Eye, X, Shield } from 'lucide-react';
+import { Download, Search, Save, Trash2, Eye, X, Shield, Edit3 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -14,6 +14,19 @@ const PlayerManager = () => {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  
+  // States for editing a player
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    photoUrl: '',
+    studyPeriod: '',
+    team: '',
+    position: '',
+    teamNumber: '',
+    contact: ''
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -72,13 +85,62 @@ const PlayerManager = () => {
     }
   };
 
+  const handleStartEdit = (player) => {
+    setEditForm({
+      name: player.name || '',
+      photoUrl: player.photoUrl || '',
+      studyPeriod: player.studyPeriod || player.periodOfStudy || '',
+      team: player.team || '',
+      position: player.position || '',
+      teamNumber: player.teamNumber || '',
+      contact: player.contact || ''
+    });
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    if (!selectedPlayer) return;
+
+    setSavingEdit(true);
+    try {
+      const playerRef = doc(db, "players", selectedPlayer.id);
+      const updatedData = {
+        name: editForm.name.trim(),
+        photoUrl: editForm.photoUrl.trim(),
+        studyPeriod: editForm.studyPeriod.trim(),
+        team: editForm.team,
+        position: editForm.position,
+        teamNumber: editForm.teamNumber,
+        contact: editForm.contact
+      };
+
+      await updateDoc(playerRef, updatedData);
+
+      const updatedPlayers = players.map(p => 
+        p.id === selectedPlayer.id ? { ...p, ...updatedData } : p
+      );
+      setPlayers(updatedPlayers);
+      applyFilters(updatedPlayers, selectedTeam, searchTerm);
+
+      // Update selected player view and close edit mode
+      setSelectedPlayer({ ...selectedPlayer, ...updatedData });
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating player details:", error);
+      alert("Failed to update player details.");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const applyFilters = (data, team, search) => {
     let result = data;
     if (team !== 'All') {
       result = result.filter(p => p.team === team);
     }
     if (search.trim() !== '') {
-      result = result.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+      result = result.filter(p => p.name && p.name.toLowerCase().includes(search.toLowerCase()));
     }
     setFilteredPlayers(result);
   };
@@ -381,7 +443,7 @@ const PlayerManager = () => {
               </tr>
             ) : (
               filteredPlayers.map(p => (
-                <tr key={p.id} className="custom-tr" onClick={() => setSelectedPlayer(p)}>
+                <tr key={p.id} className="custom-tr" onClick={() => { setSelectedPlayer(p); setIsEditing(false); }}>
                   <td className="custom-td" style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     {p.name ? p.name.toUpperCase() : 'UNKNOWN'}
                   </td>
@@ -406,9 +468,16 @@ const PlayerManager = () => {
                       <button 
                         className="icon-btn" 
                         title="View Full Registration Details"
-                        onClick={() => setSelectedPlayer(p)}
+                        onClick={() => { setSelectedPlayer(p); setIsEditing(false); }}
                       >
                         <Eye size={16} />
+                      </button>
+                      <button 
+                        className="icon-btn" 
+                        title="Edit Player Details"
+                        onClick={() => { setSelectedPlayer(p); handleStartEdit(p); }}
+                      >
+                        <Edit3 size={16} />
                       </button>
                       <button 
                         className="icon-btn delete" 
@@ -427,53 +496,146 @@ const PlayerManager = () => {
       </div>
 
       {selectedPlayer && (
-        <div className="modal-overlay" onClick={() => setSelectedPlayer(null)}>
+        <div className="modal-overlay" onClick={() => { setSelectedPlayer(null); setIsEditing(false); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Shield size={20} color="#facc15" />
-                <h3 style={{ margin: 0, color: '#facc15', fontSize: '1rem', fontWeight: 900 }}>REGISTRATION DETAILS</h3>
+                <h3 style={{ margin: 0, color: '#facc15', fontSize: '1rem', fontWeight: 900 }}>
+                  {isEditing ? 'EDIT PLAYER DETAILS' : 'REGISTRATION DETAILS'}
+                </h3>
               </div>
-              <button className="icon-btn" onClick={() => setSelectedPlayer(null)}>
+              <button className="icon-btn" onClick={() => { setSelectedPlayer(null); setIsEditing(false); }}>
                 <X size={18} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
-              <img 
-                src={selectedPlayer.photoUrl || 'https://via.placeholder.com/100'} 
-                alt="Player Profile" 
-                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #facc15', marginBottom: '10px' }} 
-              />
-              <h2 style={{ margin: 0, fontSize: '1.1rem', textAlign: 'center', fontWeight: 'normal' }}>{selectedPlayer.name ? selectedPlayer.name.toUpperCase() : ''}</h2>
-              <span style={{ fontSize: '0.8rem', color: '#93c5fd', marginTop: '4px' }}>{selectedPlayer.team || 'No Team'}</span>
-            </div>
+            {!isEditing ? (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
+                  <img 
+                    src={selectedPlayer.photoUrl || 'https://via.placeholder.com/100'} 
+                    alt="Player Profile" 
+                    style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #facc15', marginBottom: '10px' }} 
+                  />
+                  <h2 style={{ margin: 0, fontSize: '1.1rem', textAlign: 'center', fontWeight: 'normal' }}>{selectedPlayer.name ? selectedPlayer.name.toUpperCase() : ''}</h2>
+                  <span style={{ fontSize: '0.8rem', color: '#93c5fd', marginTop: '4px' }}>{selectedPlayer.team || 'No Team'}</span>
+                </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: '#0b1329', padding: '15px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              <div>
-                <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Team Number</span>
-                <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.teamNumber || 'N/A'}</p>
-              </div>
-              <div>
-                <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Sex</span>
-                <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.sex || 'N/A'}</p>
-              </div>
-              <div style={{ gridColumn: 'span 2' }}>
-                <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Years at St. Jerome</span>
-                <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.studyPeriod || selectedPlayer.periodOfStudy || 'N/A'}</p>
-              </div>
-              <div style={{ gridColumn: 'span 2' }}>
-                <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: `800` }}>Contact Info</span>
-                <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.contact || 'N/A'}</p>
-              </div>
-            </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: '#0b1329', padding: '15px', borderRadius: '14px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <div>
+                    <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Team Number</span>
+                    <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.teamNumber || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Sex</span>
+                    <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.sex || 'N/A'}</p>
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Years at St. Jerome</span>
+                    <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.studyPeriod || selectedPlayer.periodOfStudy || 'N/A'}</p>
+                  </div>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <span style={{ fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800 }}>Contact Info</span>
+                    <p style={{ margin: '2px 0 0 0', fontWeight: 600, fontSize: '0.85rem' }}>{selectedPlayer.contact || 'N/A'}</p>
+                  </div>
+                </div>
 
-            <button 
-              onClick={() => setSelectedPlayer(null)}
-              style={{ width: '100%', marginTop: '20px', background: '#facc15', color: '#04060d', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', fontSize: '0.8rem' }}
-            >
-              Close Details
-            </button>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                  <button 
+                    onClick={() => handleStartEdit(selectedPlayer)}
+                    style={{ flex: 1, background: 'rgba(250, 204, 21, 0.15)', color: '#facc15', border: '1px solid #facc15', padding: '12px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', fontSize: '0.8rem' }}
+                  >
+                    Edit Info
+                  </button>
+                  <button 
+                    onClick={() => { setSelectedPlayer(null); setIsEditing(false); }}
+                    style={{ flex: 1, background: '#facc15', color: '#04060d', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', fontSize: '0.8rem' }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            ) : (
+              <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>Player Name</label>
+                  <input 
+                    type="text" 
+                    value={editForm.name} 
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} 
+                    className="input-style"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                    required 
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>Photo URL</label>
+                  <input 
+                    type="text" 
+                    value={editForm.photoUrl} 
+                    onChange={(e) => setEditForm({ ...editForm, photoUrl: e.target.value })} 
+                    className="input-style"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>Years at St. Jerome (Study Period)</label>
+                  <input 
+                    type="text" 
+                    value={editForm.studyPeriod} 
+                    onChange={(e) => setEditForm({ ...editForm, studyPeriod: e.target.value })} 
+                    className="input-style"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>Team</label>
+                    <select 
+                      value={editForm.team} 
+                      onChange={(e) => setEditForm({ ...editForm, team: e.target.value })} 
+                      className="input-style"
+                      style={{ width: '100%', cursor: 'pointer', boxSizing: 'border-box' }}
+                    >
+                      <option value="">Unassigned</option>
+                      {teams.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: '4px' }}>Shirt #</label>
+                    <input 
+                      type="text" 
+                      value={editForm.teamNumber} 
+                      onChange={(e) => setEditForm({ ...editForm, teamNumber: e.target.value })} 
+                      className="input-style"
+                      style={{ width: '100%', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsEditing(false)}
+                    style={{ flex: 1, background: 'rgba(255, 255, 255, 0.05)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '12px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', fontSize: '0.8rem' }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={savingEdit}
+                    style={{ flex: 1, background: '#facc15', color: '#04060d', border: 'none', padding: '12px', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', fontSize: '0.8rem' }}
+                  >
+                    {savingEdit ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
