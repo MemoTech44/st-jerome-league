@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { 
@@ -14,7 +14,6 @@ import {
 
 const Players = () => {
   const [players, setPlayers] = useState([]);
-  const [filteredPlayers, setFilteredPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('all');
@@ -30,6 +29,7 @@ const Players = () => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [selectedPlayer]);
 
+  // Fast fetch data implementation
   useEffect(() => {
     const fetchPublicData = async () => {
       try {
@@ -42,12 +42,10 @@ const Players = () => {
             ...rawData,
             goals: parseInt(rawData.goals || 0),
             photo: rawData.photoUrl || rawData.photo || null,
-            // Added studyPeriod mapping to correctly catch the database field
             yearsAtSchool: rawData.studyPeriod || rawData.yearsAtStJerome || rawData.years || rawData.years_at_st_jerome || rawData.classOf || null
           };
         });
         setPlayers(data);
-        setFilteredPlayers(data);
       } catch (error) {
         console.error("Error fetching players:", error);
       } finally {
@@ -57,8 +55,9 @@ const Players = () => {
     fetchPublicData();
   }, []);
 
-  useEffect(() => {
-    let result = [...players];
+  // Optimized high-performance memoized filter calculation
+  const filteredPlayers = useMemo(() => {
+    let result = players;
     if (viewMode === 'scorers') {
       result = result.filter(p => p.goals > 0).sort((a, b) => b.goals - a.goals);
     }
@@ -69,7 +68,7 @@ const Players = () => {
         (p.team && p.team.toLowerCase().includes(term))
       );
     }
-    setFilteredPlayers(result);
+    return result;
   }, [searchTerm, viewMode, players]);
 
   if (loading) return (
@@ -140,31 +139,31 @@ const Players = () => {
         .controls-bar { 
           display: flex; 
           flex-wrap: wrap; 
-          gap: 20px; 
+          gap: 15px; 
           justify-content: space-between; 
           align-items: center;
           background: rgba(15, 23, 42, 0.6); 
           backdrop-filter: blur(12px);
-          padding: 20px 25px; 
-          border-radius: 24px;
+          padding: 18px 22px; 
+          border-radius: 20px;
           margin-bottom: 35px; 
           box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
           border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .search-box { position: relative; width: 340px; max-width: 100%; }
+        .search-box { position: relative; width: 320px; max-width: 100%; }
         
         .search-box input { 
           width: 100%; 
-          padding: 14px 16px 14px 50px; 
-          border-radius: 16px; 
+          padding: 11px 14px 11px 42px; 
+          border-radius: 14px; 
           border: 1px solid rgba(255, 255, 255, 0.12); 
           background: #0f172a; 
           color: #ffffff;
           font-weight: 600; 
           font-family: inherit;
           transition: all 0.3s ease; 
-          font-size: 0.95rem; 
+          font-size: 0.9rem; 
           box-sizing: border-box;
         }
 
@@ -179,24 +178,24 @@ const Players = () => {
 
         .search-box svg { 
           position: absolute; 
-          left: 18px; 
+          left: 14px; 
           top: 50%;
           transform: translateY(-50%); 
           color: #facc15; 
         }
 
-        .filter-group { display: flex; gap: 12px; }
+        .filter-group { display: flex; gap: 10px; }
 
         .toggle-btn { 
-          padding: 12px 22px; 
-          border-radius: 16px; 
+          padding: 10px 18px; 
+          border-radius: 14px; 
           border: 1px solid rgba(255, 255, 255, 0.1); 
           font-weight: 800; 
           cursor: pointer; 
           display: flex; 
           align-items: center; 
-          gap: 8px; 
-          font-size: 0.8rem;
+          gap: 6px; 
+          font-size: 0.75rem;
           letter-spacing: 0.5px;
           transition: all 0.3s ease; 
           white-space: nowrap; 
@@ -313,16 +312,37 @@ const Players = () => {
           display: block;
         }
 
+        /* Compact mobile scaling for search and filters */
         @media (max-width: 850px) {
-          .players-page { padding-top: 100px; }
-          .controls-bar { flex-direction: column; padding: 20px; gap: 15px; }
-          .search-box { width: 100%; }
-          .filter-group { width: 100%; }
-          .toggle-btn { flex: 1; justify-content: center; }
+          .players-page { padding-top: 100px; padding-left: 4%; padding-right: 4%; }
+          .controls-bar { 
+            flex-direction: row; 
+            flex-wrap: nowrap; 
+            padding: 12px 14px; 
+            gap: 10px; 
+            border-radius: 16px;
+          }
+          .search-box { flex: 1; min-width: 0; }
+          .search-box input { 
+            padding: 9px 10px 9px 34px; 
+            font-size: 0.8rem; 
+            border-radius: 12px; 
+          }
+          .search-box svg { left: 10px; width: 15px; height: 15px; }
+          
+          .filter-group { display: flex; gap: 6px; flex-shrink: 0; }
+          .toggle-btn { 
+            padding: 9px 12px; 
+            font-size: 0.7rem; 
+            border-radius: 12px; 
+            gap: 4px;
+          }
+          .toggle-btn svg { width: 13px; height: 13px; }
+
           .hide-on-mobile { display: none; }
-          td { padding: 16px 18px; }
-          .player-identity { font-weight: 400; color: #e2e8f0; }
-          .club-text { font-size: 0.85rem; font-weight: 400; color: #94a3b8; }
+          td { padding: 14px 14px; }
+          .player-identity { font-weight: 400; color: #e2e8f0; font-size: 0.85rem; }
+          .club-text { font-size: 0.8rem; font-weight: 400; color: #94a3b8; }
         }
       `}</style>
 
@@ -354,13 +374,13 @@ const Players = () => {
               className={`toggle-btn ${viewMode === 'all' ? 'active-all' : 'inactive'}`}
               onClick={() => setViewMode('all')} 
             >
-              <User size={16} /> ALL PLAYERS
+              <User size={15} /> ALL
             </button>
             <button 
               className={`toggle-btn ${viewMode === 'scorers' ? 'active-scorers' : 'inactive'}`}
               onClick={() => setViewMode('scorers')} 
             >
-              <Trophy size={16} /> SCORERS
+              <Trophy size={15} /> SCORERS
             </button>
           </div>
         </div>

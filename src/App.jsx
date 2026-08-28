@@ -16,6 +16,7 @@ import Players from './pages/Players';
 import Fixtures from './pages/Fixtures';
 import Results from './pages/Results';
 import Table from './pages/Table';
+import GalleryView from './pages/GalleryView';
 import Contact from './pages/Contact';
 import PlayerRegistration from './pages/PlayerRegistration';
 
@@ -55,6 +56,7 @@ function App() {
           <Route path="/fixtures" element={<Fixtures />} />
           <Route path="/results" element={<Results />} />
           <Route path="/table" element={<Table />} />
+          <Route path="/GalleryView" element={<GalleryView />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/register" element={<PlayerRegistration />} />
 

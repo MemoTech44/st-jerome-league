@@ -16,6 +16,7 @@ const Navbar = () => {
     { name: 'Fixtures', path: '/fixtures' },
     { name: 'Results', path: '/results' },
     { name: 'Table', path: '/table' },
+    { name: 'Gallery', path: '/GalleryView' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -98,7 +99,7 @@ const Navbar = () => {
 
         .nav-links-desktop { 
           display: flex; 
-          gap: 16px; 
+          gap: 14px; 
           align-items: center; 
         }
 
@@ -106,12 +107,12 @@ const Navbar = () => {
           font-family: 'Plus Jakarta Sans', sans-serif;
           color: #cbd5e1; 
           text-decoration: none; 
-          font-size: 0.75rem; 
+          font-size: 0.72rem; 
           font-weight: 700; 
           text-transform: uppercase; 
           letter-spacing: 0.5px;
           transition: all 0.25s ease;
-          padding: 6px 4px;
+          padding: 6px 2px;
           position: relative;
         }
 
@@ -133,7 +134,7 @@ const Navbar = () => {
         .nav-register {
           background: rgba(15, 23, 42, 0.9);
           color: #facc15 !important;
-          padding: 8px 18px;
+          padding: 8px 16px;
           border-radius: 10px;
           font-weight: 800;
           border: 1px solid rgba(250, 204, 21, 0.6);
@@ -169,7 +170,7 @@ const Navbar = () => {
         }
 
         /* MOBILE RESPONSIVE STYLES */
-        @media (max-width: 960px) {
+        @media (max-width: 1024px) {
           .league-logo-text { 
             display: none !important; /* Hides text on mobile view */
           }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { 
   Clock, 
   Loader2, 
@@ -8,8 +8,7 @@ import {
   Calendar,
   ChevronRight,
   X,
-  Zap,
-  Newspaper
+  Zap
 } from 'lucide-react';
 
 const News = () => {
@@ -27,10 +26,11 @@ const News = () => {
     return () => { document.body.style.overflow = 'unset'; };
   }, [selectedArticle]);
 
+  // Optimized fetch with a query limit for faster initial page load
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const newsQuery = query(collection(db, "news"), orderBy("createdAt", "desc"));
+        const newsQuery = query(collection(db, "news"), orderBy("createdAt", "desc"), limit(10));
         const querySnapshot = await getDocs(newsQuery);
         const newsData = querySnapshot.docs.map(doc => ({
           id: doc.id,
@@ -59,7 +59,7 @@ const News = () => {
 
   const getImageUrl = (url) => {
     if (!url || url.includes('via.placeholder')) {
-      return `https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80`;
+      return `https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=75`;
     }
     return url;
   };
@@ -112,11 +112,12 @@ const News = () => {
 
         .header-box h1 { 
           font-family: 'Bebas Neue', cursive;
-          font-size: clamp(3rem, 7vw, 4.8rem); 
+          font-size: clamp(2.5rem, 6vw, 4.8rem); 
           color: #ffffff; 
-          letter-spacing: 2px; 
+          letter-spacing: 1px; 
           margin: 0; 
           line-height: 1;
+          font-weight: 400; /* Lighter weight for mobile readability */
         }
 
         .header-underline { 
@@ -202,11 +203,12 @@ const News = () => {
 
         .featured-content h2 {
           font-family: 'Bebas Neue', cursive;
-          font-size: 2.2rem;
+          font-size: clamp(1.8rem, 4vw, 2.2rem);
           color: #ffffff;
-          letter-spacing: 1px;
+          letter-spacing: 0.8px;
           line-height: 1.1;
           margin: 0 0 15px 0;
+          font-weight: 400;
         }
 
         /* Grid Cards */
@@ -274,11 +276,12 @@ const News = () => {
 
         .card-title {
           font-family: 'Bebas Neue', cursive;
-          font-size: 1.6rem;
+          font-size: 1.5rem;
           color: #ffffff;
-          letter-spacing: 0.8px;
+          letter-spacing: 0.6px;
           line-height: 1.2;
           margin: 0 0 15px 0;
+          font-weight: 400;
         }
 
         .read-more-btn {
@@ -360,6 +363,11 @@ const News = () => {
           .featured-hero { grid-template-columns: 1fr; }
           .featured-img { height: 250px; min-height: auto; }
           .featured-content { padding: 30px 25px; }
+          
+          /* Mobile specific adjustments for headline weights/sizes */
+          .header-box h1 { font-size: 2.8rem; }
+          .featured-content h2 { font-size: 1.7rem; }
+          .card-title { font-size: 1.4rem; }
         }
       `}</style>
 
@@ -385,7 +393,11 @@ const News = () => {
               {featured && (
                 <div className="featured-hero" onClick={() => setSelectedArticle(featured)}>
                   <div className="featured-img">
-                    <img src={getImageUrl(featured.image || featured.imageUrl)} alt={featured.title} />
+                    <img 
+                      src={getImageUrl(featured.image || featured.imageUrl)} 
+                      alt={featured.title} 
+                      loading="lazy" 
+                    />
                   </div>
                   <div className="featured-content">
                     <div className="trending-badge">
@@ -406,7 +418,11 @@ const News = () => {
                 {regular.map((article) => (
                   <div key={article.id} className="news-card" onClick={() => setSelectedArticle(article)}>
                     <div className="card-img">
-                      <img src={getImageUrl(article.image || article.imageUrl)} alt={article.title} />
+                      <img 
+                        src={getImageUrl(article.image || article.imageUrl)} 
+                        alt={article.title} 
+                        loading="lazy" 
+                      />
                     </div>
                     <div className="card-body">
                       <span className="card-category">{article.category || "General"}</span>
@@ -436,6 +452,7 @@ const News = () => {
                 src={getImageUrl(selectedArticle.image || selectedArticle.imageUrl)} 
                 style={{ width: '100%', height: '300px', objectFit: 'cover', objectPosition: 'center 25%' }} 
                 alt={selectedArticle.title} 
+                loading="lazy"
               />
               <div style={{ padding: '35px 30px' }}>
                 <div style={{ display: 'flex', gap: '15px', marginBottom: '18px', alignItems: 'center' }}>
@@ -447,7 +464,7 @@ const News = () => {
                   </span>
                 </div>
                 
-                <h2 style={{ fontFamily: 'Bebas Neue, cursive', fontSize: '2.4rem', color: '#ffffff', marginBottom: '20px', lineHeight: 1.1, letterSpacing: '1px' }}>
+                <h2 style={{ fontFamily: 'Bebas Neue, cursive', fontSize: '2rem', color: '#ffffff', marginBottom: '20px', lineHeight: 1.1, letterSpacing: '0.8px', fontWeight: 400 }}>
                   {selectedArticle.title}
                 </h2>
                 

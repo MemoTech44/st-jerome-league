@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Newspaper, Trophy, Users, UserCircle,
   MessageSquare, LogOut, Calendar, ClipboardCheck, 
-  Menu, X, ChevronRight, Clock
+  Menu, X, ChevronRight, Clock, Image as ImageIcon
 } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -18,11 +18,12 @@ import TeamManager from './TeamManager';
 import ExecutiveManager from './ExecutiveManager';
 import ContactMessages from './ContactMessages';
 import PlayerManager from './PlayerManager';
+import GalleryAdmin from './GalleryAdmin';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [stats, setStats] = useState({ clubs: 0, news: 0, messages: 0, players: 0 });
+  const [stats, setStats] = useState({ clubs: 0, news: 0, messages: 0, players: 0, galleries: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ const Dashboard = () => {
     results: { title: "Match Results", desc: "Finalize game days by recording official scores and individual match statistics to update standings in real-time." },
     clubs: { title: "Club Database", desc: "View and manage registered league teams, update official information, and manage club rosters." },
     players: { title: "Player Registry", desc: "Maintain the comprehensive registry of all active players, including registration numbers and squad affiliations." },
+    gallery: { title: "Matchday Gallery", desc: "Manage Google Drive photo albums and preview images for matchday galleries displayed on the public portal." },
     exec: { title: "Executive Board", desc: "Manage the official profiles and hierarchy of the league leadership and technical committee." },
     inbox: { title: "Message Inbox", desc: "Review and respond to inquiries, feedback, and collaboration requests received through contact forms." }
   };
@@ -51,9 +53,15 @@ const Dashboard = () => {
       if (activeTab !== 'overview') return;
       setLoadingStats(true);
       try {
-        const collections = ["clubs", "news", "messages", "players"];
+        const collections = ["clubs", "news", "messages", "players", "matchdayGalleries"];
         const results = await Promise.all(collections.map(col => getDocs(collection(db, col))));
-        setStats({ clubs: results[0].size, news: results[1].size, messages: results[2].size, players: results[3].size });
+        setStats({ 
+          clubs: results[0].size, 
+          news: results[1].size, 
+          messages: results[2].size, 
+          players: results[3].size,
+          galleries: results[4].size 
+        });
       } catch (error) { 
         console.error(error); 
       } finally { 
@@ -77,6 +85,7 @@ const Dashboard = () => {
     { id: 'results', label: 'Results', icon: ClipboardCheck },
     { id: 'clubs', label: 'Clubs', icon: Trophy },
     { id: 'players', label: 'Players', icon: UserCircle },
+    { id: 'gallery', label: 'Gallery', icon: ImageIcon },
     { id: 'exec', label: 'Execs', icon: Users },
     { id: 'inbox', label: 'Inbox', icon: MessageSquare },
   ];
@@ -136,13 +145,13 @@ const Dashboard = () => {
           display: flex; 
           align-items: center; 
           gap: 8px; 
-          padding: 10px 16px; 
+          padding: 10px 14px; 
           border: 1px solid transparent; 
           background: transparent; 
           color: #94a3b8; 
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-weight: 700; 
-          font-size: 0.75rem; 
+          font-size: 0.72rem; 
           border-radius: 12px; 
           cursor: pointer; 
           transition: all 0.3s ease; 
@@ -281,7 +290,7 @@ const Dashboard = () => {
           flex-wrap: wrap;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
           .desktop-links { display: none; }
           .mobile-btn { display: flex; }
           .brand-mobile { display: block; }
@@ -314,7 +323,7 @@ const Dashboard = () => {
               className={`link-btn ${activeTab === item.id ? 'active' : ''}`} 
               onClick={() => setActiveTab(item.id)}
             >
-              <item.icon size={16} /> {item.label}
+              <item.icon size={15} /> {item.label}
             </button>
           ))}
           <button 
@@ -322,7 +331,7 @@ const Dashboard = () => {
             className="link-btn" 
             style={{ color: '#f87171' }}
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
           </button>
         </div>
       </nav>
@@ -405,6 +414,7 @@ const Dashboard = () => {
            activeTab === 'results' ? <ResultsManager /> :
            activeTab === 'clubs' ? <TeamManager /> :
            activeTab === 'players' ? <PlayerManager /> :
+           activeTab === 'gallery' ? <GalleryAdmin /> :
            activeTab === 'exec' ? <ExecutiveManager /> : <ContactMessages />}
         </section>
       </main>
@@ -485,7 +495,7 @@ const Overview = ({ stats, loading, setTab }) => (
 
       .stat-grid { 
         display: grid; 
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
         gap: 20px; 
       }
 
@@ -518,7 +528,7 @@ const Overview = ({ stats, loading, setTab }) => (
 
       .interactive-card h2 { 
         font-family: 'Bebas Neue', cursive; 
-        font-size: clamp(3rem, 5vw, 3.8rem); 
+        font-size: clamp(2.5rem, 4vw, 3.5rem); 
         color: #facc15; 
         margin: 0; 
         line-height: 1; 
@@ -584,6 +594,10 @@ const Overview = ({ stats, loading, setTab }) => (
       <div className="interactive-card" onClick={() => setTab('players')}>
         <h4>Active Players</h4>
         <h2>{loading ? '..' : stats.players}</h2>
+      </div>
+      <div className="interactive-card" onClick={() => setTab('gallery')}>
+        <h4>Galleries</h4>
+        <h2>{loading ? '..' : stats.galleries}</h2>
       </div>
       <div className="interactive-card" onClick={() => setTab('news')}>
         <h4>League News</h4>
