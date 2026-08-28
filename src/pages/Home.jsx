@@ -5,7 +5,6 @@ import { collection, getDocs } from 'firebase/firestore';
 import { ArrowRight, Shield, Heart, Users } from 'lucide-react';
 
 // Assets
-import logo from '../assets/logo.jpeg';
 import fallImg from '../assets/chris.jpeg';
 
 const Home = () => {
@@ -50,7 +49,7 @@ const Home = () => {
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         
         .home-root { 
-          background-color: #060913; 
+          background-color: #04060d; 
           color: #f8fafc;
           font-family: 'Plus Jakarta Sans', sans-serif; 
           overflow-x: hidden; 
@@ -58,31 +57,29 @@ const Home = () => {
         
         .hero-viewport { 
           position: relative; 
-          background: radial-gradient(circle at top center, rgba(30, 64, 175, 0.4) 0%, #060913 80%);
+          background: radial-gradient(circle at top center, rgba(15, 23, 42, 0.9) 0%, #04060d 80%);
           display: flex; 
           align-items: center; 
           justify-content: center; 
-          padding: 100px 24px 50px;
+          padding: 120px 24px 50px;
           text-align: center;
         }
-        
-        .logo-badge { 
-          width: 95px; 
-          height: 95px; 
-          background: #0f172a; 
-          border-radius: 50%; 
-          padding: 8px; 
-          margin: 0 auto 20px; 
-          border: 2px solid #facc15; 
-          box-shadow: 0 0 30px rgba(250, 204, 21, 0.25); 
-          object-fit: contain;
+
+        .welcome-prefix {
+          font-family: 'Cinzel', serif;
+          color: #facc15;
+          font-weight: 700;
+          letter-spacing: 5px;
+          text-transform: uppercase;
+          font-size: clamp(0.9rem, 2.2vw, 1.25rem);
+          margin: 0 0 8px 0;
         }
         
         .hero-title {
           font-family: 'Bebas Neue', cursive;
-          font-size: clamp(3rem, 9vw, 5.5rem); 
+          font-size: clamp(3.2rem, 9.5vw, 5.8rem); 
           letter-spacing: 2px;
-          margin: 0 0 4px 0; 
+          margin: 0 0 16px 0; 
           line-height: 0.95;
           color: #ffffff;
           text-transform: uppercase;
@@ -92,9 +89,9 @@ const Home = () => {
           font-family: 'Cinzel', serif;
           color: #facc15;
           font-weight: 700;
-          letter-spacing: 4px;
+          letter-spacing: 3px;
           text-transform: uppercase;
-          font-size: clamp(0.85rem, 2vw, 1.1rem);
+          font-size: clamp(0.85rem, 1.8vw, 1.05rem);
           margin: 0 auto 30px;
         }
 
@@ -109,7 +106,7 @@ const Home = () => {
         }
 
         .hero-description-box {
-          max-width: 820px;
+          max-width: 860px;
           margin: 0 auto;
           display: flex;
           flex-direction: column;
@@ -125,18 +122,18 @@ const Home = () => {
         }
 
         .glass-card {
-          background: rgba(15, 23, 42, 0.5);
+          background: rgba(15, 23, 42, 0.9);
           backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.07);
-          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 18px;
         }
 
         .value-pillar {
           padding: 32px 24px;
-          background: rgba(15, 23, 42, 0.5);
+          background: rgba(15, 23, 42, 0.9);
           backdrop-filter: blur(12px);
-          border-radius: 20px;
-          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 18px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
           text-align: center;
           display: flex;
           flex-direction: column;
@@ -165,8 +162,8 @@ const Home = () => {
 
         .pulse-card { 
           transition: all 0.3s ease; 
-          border: 1px solid rgba(255, 255, 255, 0.07); 
-          background: rgba(15, 23, 42, 0.5);
+          border: 1px solid rgba(255, 255, 255, 0.08); 
+          background: rgba(15, 23, 42, 0.9);
           display: flex;
           gap: 16px;
           padding: 16px;
@@ -174,7 +171,6 @@ const Home = () => {
           cursor: pointer;
         }
 
-        /* Banner with curved corners & padding so it doesn't touch edges */
         .page-banner-wrapper {
           padding: 0 5%;
           max-width: 1280px;
@@ -185,7 +181,7 @@ const Home = () => {
         .page-banner {
           width: 100%;
           height: 380px;
-          border-radius: 24px;
+          border-radius: 18px;
           overflow: hidden;
           position: relative;
           border: 1px solid rgba(255, 255, 255, 0.08);
@@ -201,15 +197,13 @@ const Home = () => {
         
         .pulse-card:hover { 
           transform: translateY(-4px); 
-          border-color: #1e40af; 
+          border-color: rgba(250, 204, 21, 0.3); 
           box-shadow: 0 12px 35px rgba(0,0,0,0.6); 
-          background: rgba(15, 23, 42, 0.85);
+          background: rgba(15, 23, 42, 1);
         }
 
         @media (max-width: 640px) {
           .hero-viewport { padding: 95px 16px 36px; }
-          .logo-badge { width: 75px; height: 75px; margin-bottom: 14px; }
-          .hero-subtitle { margin-bottom: 20px; }
           
           .page-banner-wrapper {
             padding: 0 16px;
@@ -237,17 +231,17 @@ const Home = () => {
 
       {/* HERO SECTION */}
       <section className="hero-viewport">
-        <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '850px' }}>
-          <img src={logo || ""} alt="League Logo" className="logo-badge" />
+        <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '860px' }}>
+          <p className="welcome-prefix">Welcome To</p>
           <h1 className="hero-title">St. Jerome League</h1>
           <p className="hero-subtitle">Connecting Generations</p>
           
           <div className="hero-description-box">
             <p className="hero-description">
-              The St. Jerome League stands as a premier football championship built on the timeless values of sportsmanship, excellence, and camaraderie. Founded to celebrate football heritage, our league brings together teams from diverse backgrounds to compete at the highest structural standard while fostering athletic development.
+              The St. Jerome League is more than a football championship—it is a celebration of heritage, friendship, achievement, and the enduring bonds forged within the walls of our schools. Bringing together alumni from different generations, classes, and eras, the League transforms the beautiful game into a powerful platform for reconnection, healthy rivalry, and lifelong camaraderie.
             </p>
             <p className="hero-description">
-              Through dynamic match seasons and community-driven initiatives, we create an ecosystem where historic rivalries thrive alongside genuine fellowship. We empower players, honor our supporters, and maintain an inclusive football environment that truly connects generations across the pitch.
+              Operating proudly under the mother body of the Jerome Students Association (JOSA), the St. Jerome League provides a professionally structured football environment where alumni can compete at the highest standard while strengthening the relationships that continue long after graduation. Here, former classmates return not merely as spectators, but as players, leaders, mentors, and ambassadors of their school legacy.
             </p>
           </div>
         </div>
@@ -274,15 +268,15 @@ const Home = () => {
             <Shield color="#facc15" size={32} />
             <h4 className="value-title">Heritage & Integrity</h4>
             <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.7 }}>
-              Upholding strict standards of fair play and respecting the rich football tradition that brings our clubs together season after season.
+              Upholding strict standards of fair play and respecting the rich traditions of St. Jerome Secondary School Ndama across every season.
             </p>
           </div>
 
           <div className="value-pillar">
             <Users color="#facc15" size={32} />
-            <h4 className="value-title">Community Unity</h4>
+            <h4 className="value-title">Alumni Unity</h4>
             <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.7 }}>
-              Serving as a vital bridge that connects emerging young talent with seasoned veterans, forging unbreakable bonds beyond the 90 minutes.
+              Acting as a vibrant networking bridge connecting veteran alumni with recent graduates through JOSA initiatives and football camaraderie.
             </p>
           </div>
 
@@ -290,7 +284,7 @@ const Home = () => {
             <Heart color="#facc15" size={32} />
             <h4 className="value-title">Unmatched Passion</h4>
             <p style={{ margin: 0, fontSize: '0.88rem', color: '#94a3b8', lineHeight: 1.7 }}>
-              Providing an intense, high-energy league structure where every match day brings out the absolute best in our players and dedicated supporters.
+              Delivering an intense, high-energy league structure where every match day brings out the absolute best in our players and supporters.
             </p>
           </div>
         </div>

@@ -1,43 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { Trophy, Loader2, Shield, Download } from 'lucide-react';
-import { toJpeg } from 'html-to-image';
+import { Trophy, Loader2, Shield } from 'lucide-react';
 
 const Table = () => {
   const [leagueData, setLeagueData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [downloading, setDownloading] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState("Season 2");
-  const tableRef = useRef(null);
 
   // Capped up to Season 4
   const seasons = ["Season 1", "Season 2", "Season 3", "Season 4"];
-
-  // Download JPEG Handler
-  const downloadTable = async () => {
-    if (tableRef.current === null) return;
-    setDownloading(true);
-
-    try {
-      const dataUrl = await toJpeg(tableRef.current, { 
-        quality: 0.95, 
-        backgroundColor: '#04060d',
-        cacheBust: true,
-        style: { padding: '24px', borderRadius: '24px' }
-      });
-
-      const link = document.createElement('a');
-      link.download = `St-Jerome-Standings-${selectedSeason}.jpg`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Download failed:', err);
-      alert("Failed to generate image. Please check your connection.");
-    } finally {
-      setDownloading(false);
-    }
-  };
 
   useEffect(() => {
     const generateTableData = async () => {
@@ -62,6 +34,9 @@ const Table = () => {
           where("status", "==", "completed")
         );
         const fixturesSnapshot = await getDocs(fixturesQuery);
+
+        // Check if any matches have been completed for this season
+        const hasSeasonStarted = fixturesSnapshot.docs.length > 0;
 
         fixturesSnapshot.docs.forEach(doc => {
           const match = doc.data();
@@ -94,11 +69,19 @@ const Table = () => {
           }
         });
 
-        const sortedTeams = Object.values(teamsMap).sort((a, b) => {
-          if (b.pts !== a.pts) return b.pts - a.pts;
-          if (b.gd !== a.gd) return b.gd - a.gd;
-          return b.gf - a.gf;
-        });
+        let sortedTeams = Object.values(teamsMap);
+
+        if (!hasSeasonStarted) {
+          // Default order: Alphabetical by team name if season hasn't started
+          sortedTeams.sort((a, b) => a.name.localeCompare(b.name));
+        } else {
+          // Standard league standings sorting order
+          sortedTeams.sort((a, b) => {
+            if (b.pts !== a.pts) return b.pts - a.pts;
+            if (b.gd !== a.gd) return b.gd - a.gd;
+            return b.gf - a.gf;
+          });
+        }
 
         setLeagueData(sortedTeams.map((t, i) => ({ ...t, pos: i + 1 })));
       } catch (error) {
@@ -118,17 +101,21 @@ const Table = () => {
         
         .table-page { 
           background-color: #04060d; 
-          padding: 120px 5% 80px; 
+          padding: 120px 5% 40px; 
           min-height: 100vh; 
           font-family: 'Plus Jakarta Sans', sans-serif; 
           color: #f8fafc;
           box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
+
+        .container { max-width: 920px; margin: 0 auto; width: 100%; }
         .gold-text { color: #facc15; }
         
         /* Header Box */
-        .header-box { text-align: center; margin-bottom: 40px; }
+        .header-box { text-align: center; margin-bottom: 45px; }
 
         .header-tag {
           font-family: 'Cinzel', serif;
@@ -146,25 +133,16 @@ const Table = () => {
           font-size: clamp(3rem, 7vw, 4.8rem); 
           color: #ffffff; 
           letter-spacing: 2px; 
-          margin: 0 0 6px 0; 
+          margin: 0 0 25px 0; 
           line-height: 1;
         }
 
-        .header-box p {
-          color: #94a3b8;
-          font-size: 0.95rem;
-          font-weight: 500;
-          margin: 0;
-        }
-
         /* Controls Section */
-        .action-bar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 25px;
-          flex-wrap: wrap;
-          gap: 15px;
+        .selector-wrapper { 
+          display: flex; 
+          flex-direction: column; 
+          gap: 16px; 
+          align-items: center; 
         }
 
         .season-filter { 
@@ -175,11 +153,10 @@ const Table = () => {
           border-radius: 20px;
           border: 1px solid rgba(255, 255, 255, 0.08);
           box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-          margin: 0 auto;
         }
 
         .season-tab { 
-          padding: 10px 18px; 
+          padding: 10px 22px; 
           border-radius: 14px; 
           border: none; 
           background: transparent; 
@@ -199,116 +176,97 @@ const Table = () => {
           box-shadow: 0 4px 15px rgba(250, 204, 21, 0.25);
         }
 
-        .download-btn {
-          background: rgba(250, 204, 21, 0.1);
-          color: #facc15;
-          border: 1px solid rgba(250, 204, 21, 0.3);
-          padding: 11px 20px;
-          border-radius: 16px;
-          font-weight: 800;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          font-size: 0.8rem;
-          letter-spacing: 0.5px;
-          transition: all 0.3s ease;
-        }
-
-        .download-btn:hover:not(:disabled) {
-          background: #facc15;
-          color: #04060d;
-          box-shadow: 0 6px 20px rgba(250, 204, 21, 0.25);
-        }
-
-        .download-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
         /* Table Card & Content */
         .table-card { 
-          background: rgba(15, 23, 42, 0.6); 
+          background: rgba(15, 23, 42, 0.9); 
           backdrop-filter: blur(12px);
-          border-radius: 24px; 
+          border-radius: 18px; 
           overflow: hidden; 
-          box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+          box-shadow: 0 8px 20px rgba(0,0,0,0.25); 
           border: 1px solid rgba(255, 255, 255, 0.08); 
-          padding: 10px;
+          padding: 24px;
+          width: 100%;
+          box-sizing: border-box;
         }
-        
-        table { width: 100%; border-collapse: collapse; }
+
+        .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
         
         th { 
-          background: rgba(4, 6, 13, 0.6); 
-          padding: 16px 12px; 
-          font-size: 0.75rem; 
-          font-weight: 800; 
+          background: rgba(4, 6, 13, 0.8); 
+          padding: 12px 10px; 
+          font-size: 0.7rem; 
+          font-weight: 700; 
           color: #64748b; 
           text-transform: uppercase; 
           border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
           letter-spacing: 1px;
+          text-align: center;
         }
         
         td { 
-          padding: 16px 12px; 
+          padding: 12px 10px; 
           border-bottom: 1px solid rgba(255, 255, 255, 0.04); 
-          font-weight: 600; 
+          font-weight: 500; 
           text-align: center; 
           color: #e2e8f0; 
-          font-size: 0.9rem; 
+          font-size: 0.85rem; 
         }
-        
-        tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
         .w-pos { 
-          width: 50px; 
+          width: 45px; 
           font-family: 'Bebas Neue', cursive; 
           font-size: 1.1rem; 
           color: #facc15; 
         }
 
-        .w-team { text-align: left; padding-left: 15px; }
+        .w-team { text-align: left; padding-left: 10px; }
 
         .w-pts { 
           background: rgba(250, 204, 21, 0.08); 
           color: #facc15; 
           font-family: 'Bebas Neue', cursive; 
-          font-size: 1.2rem;
-          width: 70px; 
+          font-size: 1.15rem; 
+          width: 60px; 
         }
 
-        .col-team-cell { display: flex; align-items: center; gap: 12px; }
+        .col-team-cell { display: flex; align-items: center; gap: 10px; }
         
-        /* Team Name: Unbolded */
         .team-name-text { 
-          font-family: 'Bebas Neue', cursive;
-          font-size: 1.25rem; 
-          font-weight: 400; 
-          color: #ffffff; 
-          letter-spacing: 0.5px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 0.85rem; 
+          font-weight: 600; 
+          color: #f1f5f9; 
         }
 
         .team-logo-container { 
-          width: 32px; 
-          height: 32px; 
+          width: 28px; 
+          height: 28px; 
           display: flex; 
           align-items: center; 
           justify-content: center; 
           background: #04060d; 
-          border-radius: 10px; 
+          border-radius: 8px; 
           border: 1px solid rgba(250, 204, 21, 0.2);
           flex-shrink: 0;
+          padding: 3px;
         }
 
-        .team-logo { width: 20px; height: 20px; object-fit: contain; }
+        .team-logo { max-width: 100%; max-height: 100%; object-fit: contain; }
         
         tr.leader td { background: rgba(250, 204, 21, 0.03); }
 
         .legend { 
           display: flex; 
           justify-content: center; 
-          gap: 18px; 
+          gap: 16px; 
           margin-top: 25px; 
-          padding: 16px; 
+          padding: 14px 20px; 
           background: rgba(15, 23, 42, 0.6); 
           border-radius: 18px; 
           border: 1px solid rgba(255, 255, 255, 0.08); 
@@ -320,25 +278,13 @@ const Table = () => {
 
         .legend b { color: #facc15; }
 
-        .export-header {
-          text-align: center;
-          padding-bottom: 20px;
-          margin-bottom: 15px;
-          border-bottom: 1px solid rgba(250, 204, 21, 0.2);
-        }
-
         @media (max-width: 768px) {
-          .table-page { padding-top: 100px; }
-          .hide-mobile { display: none; }
+          .table-page { padding-top: 90px; padding-left: 12px; padding-right: 12px; }
+          .header-box { margin-bottom: 25px; }
+          .header-box h1 { font-size: 2.4rem; margin-bottom: 15px; }
           
-          /* Hide logos on mobile screens */
-          .hide-mobile-logo { display: none !important; }
-
-          .action-bar { flex-direction: column; align-items: center; gap: 12px; }
-          .download-btn { width: 100%; max-width: 300px; }
-          td, th { padding: 12px 6px; font-size: 0.8rem; }
-          .team-name-text { font-size: 0.95rem; }
-          .w-team { padding-left: 5px; }
+          .season-filter { padding: 4px; border-radius: 14px; gap: 4px; width: 100%; max-width: 340px; justify-content: space-between; }
+          .season-tab { padding: 6px 10px; font-size: 0.65rem; border-radius: 10px; flex: 1; text-align: center; }
         }
       `}</style>
 
@@ -346,93 +292,77 @@ const Table = () => {
         <header className="header-box">
           <span className="header-tag">League Archives</span>
           <h1>LEAGUE <span className="gold-text">STANDINGS</span></h1>
-          <p>Official performance table for {selectedSeason}</p>
+          
+          <div className="selector-wrapper">
+            <div className="season-filter">
+              {seasons.map(s => (
+                <button 
+                  key={s} 
+                  onClick={() => setSelectedSeason(s)} 
+                  className={`season-tab ${selectedSeason === s ? 'active' : ''}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
         </header>
 
-        <div className="action-bar">
-          <div className="season-filter">
-            {seasons.map(s => (
-              <button 
-                key={s} 
-                onClick={() => setSelectedSeason(s)} 
-                className={`season-tab ${selectedSeason === s ? 'active' : ''}`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-
-          <button className="download-btn" onClick={downloadTable} disabled={downloading}>
-            {downloading ? <Loader2 className="animate-spin" size={16}/> : <Download size={16}/>}
-            SAVE AS JPG
-          </button>
-        </div>
-
-        <div className="table-card" ref={tableRef}>
+        <div className="table-card">
           {loading ? (
-            <div style={{ padding: '80px', textAlign: 'center' }}>
+            <div style={{ padding: '60px', textAlign: 'center' }}>
               <Loader2 className="animate-spin" size={40} color="#facc15" style={{ margin: 'auto' }}/>
               <p style={{ marginTop: '15px', fontWeight: 800, color: '#facc15', letterSpacing: '2px', fontSize: '0.8rem' }}>
-                CALCULATING STANDINGS...
+                LOADING STANDINGS...
               </p>
             </div>
           ) : (
-            <div>
-              <div className="export-header" style={{ display: downloading ? 'block' : 'none' }}>
-                <span style={{ fontFamily: 'Cinzel', color: '#facc15', fontSize: '0.8rem', letterSpacing: '2px', display: 'block' }}>ST. JEROME LEAGUE</span>
-                <h2 style={{ fontFamily: 'Bebas Neue', fontSize: '2.2rem', color: '#ffffff', margin: '2px 0 0 0' }}>
-                  {selectedSeason} — STANDINGS
-                </h2>
-              </div>
-
-              <div style={{ overflowX: 'auto' }}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th className="w-pos">Pos</th>
-                      <th className="w-team">Club</th>
-                      <th>P</th>
-                      <th className="hide-mobile">W</th>
-                      <th className="hide-mobile">D</th>
-                      <th className="hide-mobile">L</th>
-                      <th className="hide-mobile">GF</th>
-                      <th className="hide-mobile">GA</th>
-                      <th>GD</th>
-                      <th className="w-pts">Pts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leagueData.map((team) => (
-                      <tr key={team.id} className={team.pos === 1 ? 'leader' : ''}>
-                        <td className="w-pos">{team.pos}</td>
-                        <td className="w-team">
-                          <div className="col-team-cell">
-                            {/* Logo hidden on mobile screens */}
-                            <div className="team-logo-container hide-mobile-logo">
-                              {team.logo ? (
-                                <img src={team.logo} className="team-logo" crossOrigin="anonymous" alt=""/>
-                              ) : (
-                                <Shield size={14} color="#facc15"/>
-                              )}
-                            </div>
-                            <span className="team-name-text">{team.name}</span>
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th className="w-pos">Pos</th>
+                    <th className="w-team">Club</th>
+                    <th>P</th>
+                    <th>W</th>
+                    <th>D</th>
+                    <th>L</th>
+                    <th>GF</th>
+                    <th>GA</th>
+                    <th>GD</th>
+                    <th className="w-pts">Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leagueData.map((team) => (
+                    <tr key={team.id} className={team.pos === 1 ? 'leader' : ''}>
+                      <td className="w-pos">{team.pos}</td>
+                      <td className="w-team">
+                        <div className="col-team-cell">
+                          <div className="team-logo-container">
+                            {team.logo ? (
+                              <img src={team.logo} className="team-logo" crossOrigin="anonymous" alt=""/>
+                            ) : (
+                              <Shield size={14} color="#facc15"/>
+                            )}
                           </div>
-                        </td>
-                        <td>{team.p}</td>
-                        <td className="hide-mobile">{team.w}</td>
-                        <td className="hide-mobile">{team.d}</td>
-                        <td className="hide-mobile">{team.l}</td>
-                        <td className="hide-mobile">{team.gf}</td>
-                        <td className="hide-mobile">{team.ga}</td>
-                        <td style={{ color: team.gd > 0 ? '#10b981' : team.gd < 0 ? '#ef4444' : 'inherit' }}>
-                          {team.gd > 0 ? `+${team.gd}` : team.gd}
-                        </td>
-                        <td className="w-pts">{team.pts}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          <span className="team-name-text">{team.name}</span>
+                        </div>
+                      </td>
+                      <td>{team.p}</td>
+                      <td>{team.w}</td>
+                      <td>{team.d}</td>
+                      <td>{team.l}</td>
+                      <td>{team.gf}</td>
+                      <td>{team.ga}</td>
+                      <td style={{ color: team.gd > 0 ? '#10b981' : team.gd < 0 ? '#ef4444' : 'inherit' }}>
+                        {team.gd > 0 ? `+${team.gd}` : team.gd}
+                      </td>
+                      <td className="w-pts">{team.pts}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

@@ -111,6 +111,7 @@ const About = () => {
           width: 100%;
           height: 100%;
           object-fit: cover;
+          object-position: center 25%;
           display: block;
         }
 
@@ -279,11 +280,19 @@ const About = () => {
           width: 100%;
         }
 
+        .team-logo-container img {
+          max-width: 75px; 
+          max-height: 75px; 
+          object-fit: contain; 
+          object-position: center 25%;
+        }
+
         .team-name {
           font-weight: 700;
           font-size: 1rem;
           color: #f8fafc;
           margin-bottom: 10px;
+          text-transform: uppercase;
         }
 
         .team-arrow {
@@ -339,6 +348,7 @@ const About = () => {
           color: #ffffff;
           margin: 0;
           line-height: 1;
+          text-transform: uppercase;
         }
 
         .roles-list { 
@@ -363,6 +373,7 @@ const About = () => {
           font-weight: 700; 
           color: #f8fafc; 
           font-size: 0.85rem; 
+          text-transform: uppercase;
         }
 
         .role-info small { 
@@ -388,6 +399,7 @@ const About = () => {
           font-weight: 500; 
           font-size: 0.85rem; 
           margin: 0;
+          text-transform: uppercase;
         }
 
         .modal-action-btn {
@@ -508,12 +520,12 @@ const About = () => {
             <div key={team.id} className="team-card" onClick={() => setSelectedTeam(team)}>
               <div className="team-logo-container">
                 {team.logoUrl ? (
-                  <img src={team.logoUrl} alt={team.name} style={{ maxWidth: '75px', maxHeight: '75px', objectFit: 'contain' }} />
+                  <img src={team.logoUrl} alt={team.name} />
                 ) : (
                   <Shield size={60} color="#334155" />
                 )}
               </div>
-              <div className="team-name">{team.name}</div>
+              <div className="team-name">{team.name ? team.name.toUpperCase() : ''}</div>
               <ChevronRight size={18} className="team-arrow" />
             </div>
           ))}
@@ -526,12 +538,12 @@ const About = () => {
               <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                 <div style={{ height: '75px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                   {selectedTeam.logoUrl ? (
-                    <img src={selectedTeam.logoUrl} alt={selectedTeam.name} style={{ maxHeight: '75px', objectFit: 'contain' }} />
+                    <img src={selectedTeam.logoUrl} alt={selectedTeam.name} style={{ maxHeight: '75px', objectFit: 'contain', objectPosition: 'center 25%' }} />
                   ) : (
                     <Shield size={65} color="#334155" />
                   )}
                 </div>
-                <h2 className="modal-header-title">{selectedTeam.name}</h2>
+                <h2 className="modal-header-title">{selectedTeam.name ? selectedTeam.name.toUpperCase() : ''}</h2>
               </div>
 
               <div className="roles-list">
@@ -539,28 +551,30 @@ const About = () => {
                   <UserCheck size={18} className="gold-text" />
                   <div className="role-info">
                     <small>Chairman</small>
-                    <span>{selectedTeam.chairman || 'Not Set'}</span>
+                    <span>{selectedTeam.chairman ? selectedTeam.chairman.toUpperCase() : 'NOT SET'}</span>
                   </div>
                 </div>
                 <div className="role-badge">
                   <Briefcase size={18} className="gold-text" />
                   <div className="role-info">
                     <small>Head Coach</small>
-                    <span>{selectedTeam.coach || 'Not Set'}</span>
+                    <span>{selectedTeam.coach ? selectedTeam.coach.toUpperCase() : 'NOT SET'}</span>
                   </div>
                 </div>
                 <div className="role-badge">
                   <Flag size={18} className="gold-text" />
                   <div className="role-info">
                     <small>Captain</small>
-                    <span>{selectedTeam.captain || 'Not Set'}</span>
+                    <span>{selectedTeam.captain ? selectedTeam.captain.toUpperCase() : 'NOT SET'}</span>
                   </div>
                 </div>
               </div>
 
               <div className="modal-bio-box">
                 <p>
-                  {selectedTeam.description || `${selectedTeam.name} is a vital club within the St. Jerome community, embodying sportsmanship and alumni unity.`}
+                  {selectedTeam.description 
+                    ? selectedTeam.description.toUpperCase() 
+                    : `${selectedTeam.name ? selectedTeam.name.toUpperCase() : ''} IS A VITAL CLUB WITHIN THE ST. JEROME COMMUNITY, EMBODYING SPORTSMANSHIP AND ALUMNI UNITY.`}
                 </p>
               </div>
 

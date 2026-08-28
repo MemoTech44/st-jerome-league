@@ -7,7 +7,7 @@ import {
   User, 
   Loader2, 
   TrendingUp,
-  ShieldCheck,
+  Calendar,
   UserX,
   X,
   ChevronRight
@@ -254,13 +254,14 @@ const Players = () => {
           cursor: pointer; 
         }
 
-        .player-identity { display: flex; align-items: center; gap: 14px; font-weight: 700; color: #ffffff; }
+        .player-identity { display: flex; align-items: center; gap: 14px; font-weight: 700; color: #ffffff; text-transform: uppercase; }
 
         .row-avatar { 
           width: 44px; 
           height: 44px; 
           border-radius: 12px; 
           object-fit: cover; 
+          object-position: top; 
           background: #0f172a; 
           border: 1px solid rgba(250, 204, 21, 0.3); 
         }
@@ -269,6 +270,7 @@ const Players = () => {
           color: #cbd5e1; 
           font-size: 0.9rem; 
           font-weight: 400; 
+          text-transform: uppercase;
         }
 
         /* Modal Styling */
@@ -306,30 +308,9 @@ const Players = () => {
           width: 100%; 
           height: 320px; 
           object-fit: cover; 
+          object-position: top; 
           background: #04060d; 
           display: block;
-        }
-
-        .close-btn {
-          position: absolute;
-          top: 16px;
-          right: 16px;
-          background: rgba(15, 23, 42, 0.8);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 50%;
-          width: 38px;
-          height: 38px;
-          z-index: 10;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-        }
-
-        .close-btn:hover {
-          background: #facc15;
-          color: #04060d;
         }
 
         @media (max-width: 850px) {
@@ -416,15 +397,15 @@ const Players = () => {
                           className="row-avatar hide-on-mobile" 
                           alt={player.name} 
                         />
-                        {player.name}
+                        {player.name ? player.name.toUpperCase() : ''}
                       </div>
                     </td>
                     <td>
                       <span className="club-text">
-                        {player.team || "Independent"}
+                        {player.team ? player.team.toUpperCase() : "INDEPENDENT"}
                       </span>
                     </td>
-                    <td className="hide-on-mobile" style={{ color: '#94a3b8' }}>{player.position || 'N/A'}</td>
+                    <td className="hide-on-mobile" style={{ color: '#94a3b8', textTransform: 'uppercase' }}>{player.position ? player.position.toUpperCase() : 'N/A'}</td>
                     <td className="hide-on-mobile" style={{ textAlign: 'center', fontWeight: 800, color: player.goals > 0 ? '#facc15' : '#64748b' }}>
                       {player.goals > 0 ? player.goals : '—'}
                     </td>
@@ -444,10 +425,6 @@ const Players = () => {
         {selectedPlayer && (
           <div className="modal-overlay" onClick={() => setSelectedPlayer(null)}>
             <div className="modal-card" onClick={e => e.stopPropagation()}>
-              <button className="close-btn" onClick={() => setSelectedPlayer(null)}>
-                <X size={20} color="#ffffff" />
-              </button>
-
               <img 
                 src={selectedPlayer.photo || `https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80`} 
                 className="modal-hero-img" 
@@ -456,15 +433,15 @@ const Players = () => {
 
               <div style={{ padding: '30px 25px', textAlign: 'center' }}>
                 <span style={{ color: '#facc15', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
-                  {selectedPlayer.team || "Independent Club"}
+                  {selectedPlayer.team ? selectedPlayer.team.toUpperCase() : "INDEPENDENT CLUB"}
                 </span>
                 
-                <h2 style={{ fontFamily: 'Bebas Neue', fontSize: '2.4rem', color: '#ffffff', margin: '0 0 4px 0', lineHeight: 1 }}>
-                  {selectedPlayer.name}
+                <h2 style={{ fontFamily: 'Bebas Neue', fontSize: '2.4rem', color: '#ffffff', margin: '0 0 4px 0', lineHeight: 1, textTransform: 'uppercase' }}>
+                  {selectedPlayer.name ? selectedPlayer.name.toUpperCase() : ''}
                 </h2>
                 
-                <p style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.9rem', marginBottom: '25px' }}>
-                  {selectedPlayer.position || 'Field Player'}
+                <p style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.9rem', marginBottom: '25px', textTransform: 'uppercase' }}>
+                  {selectedPlayer.position ? selectedPlayer.position.toUpperCase() : 'FIELD PLAYER'}
                 </p>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
@@ -475,9 +452,11 @@ const Players = () => {
                   </div>
                   
                   <div style={{ background: 'rgba(250, 204, 21, 0.05)', padding: '16px', borderRadius: '18px', border: '1px solid rgba(250, 204, 21, 0.2)' }}>
-                    <ShieldCheck size={18} className="gold-text" style={{ marginBottom: '6px' }} />
-                    <span style={{ display: 'block', fontSize: '0.65rem', fontWeight: 800, color: '#facc15', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</span>
-                    <b style={{ fontSize: '0.85rem', color: '#ffffff', display: 'block', marginTop: '6px', fontWeight: 800 }}>VERIFIED</b>
+                    <Calendar size={18} className="gold-text" style={{ marginBottom: '6px' }} />
+                    <span style={{ display: 'block', fontSize: '0.65rem', fontWeight: 800, color: '#facc15', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Years at St. Jerome</span>
+                    <b style={{ fontSize: '0.85rem', color: '#ffffff', display: 'block', marginTop: '6px', fontWeight: 800, textTransform: 'uppercase' }}>
+                      {selectedPlayer.yearsAtStJerome || selectedPlayer.years || 'N/A'}
+                    </b>
                   </div>
                 </div>
 

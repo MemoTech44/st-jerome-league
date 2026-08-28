@@ -25,10 +25,11 @@ const Fixtures = () => {
         });
         setTeamLogos(logos);
 
+        // Sorting by date descending (latest date on top) and time ascending (earliest game first)
         const q = query(
           collection(db, "fixtures"), 
           where("season", "==", selectedSeason),
-          orderBy("matchday", "asc"),
+          orderBy("date", "desc"),
           orderBy("time", "asc")
         );
         
@@ -38,7 +39,14 @@ const Fixtures = () => {
           ...doc.data()
         }));
 
-        const mdays = [...new Set(matchData.map(m => m.matchday))].sort((a, b) => Number(a) - Number(b));
+        // Handle dynamic matchdays (supports both numeric rounds and text like Gala fixtures)
+        const mdays = [...new Set(matchData.map(m => m.matchday))].sort((a, b) => {
+          const numA = Number(a);
+          const numB = Number(b);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          return String(a).localeCompare(String(b));
+        });
+
         setAvailableMatchdays(mdays);
         setFixtures(matchData);
       } catch (error) {
@@ -52,7 +60,7 @@ const Fixtures = () => {
 
   const filteredFixtures = selectedMatchday === 'All' 
     ? fixtures 
-    : fixtures.filter(m => Number(m.matchday) === Number(selectedMatchday));
+    : fixtures.filter(m => String(m.matchday) === String(selectedMatchday));
 
   const groupedByMatchday = filteredFixtures.reduce((acc, match) => {
     const md = match.matchday;
@@ -212,46 +220,46 @@ const Fixtures = () => {
         .match-card {
           background: rgba(15, 23, 42, 0.6); 
           backdrop-filter: blur(12px);
-          border-radius: 24px; 
-          padding: 22px 35px; 
-          margin-bottom: 12px;
+          border-radius: 18px; 
+          padding: 14px 24px; 
+          margin-bottom: 10px;
           display: grid; 
-          grid-template-columns: 1fr 110px 1fr; 
+          grid-template-columns: 1fr 95px 1fr; 
           align-items: center;
           border: 1px solid rgba(255, 255, 255, 0.08); 
-          box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+          box-shadow: 0 8px 20px rgba(0,0,0,0.25); 
           transition: all 0.3s ease;
         }
 
         .match-card:hover { 
           transform: translateY(-2px); 
           border-color: rgba(250, 204, 21, 0.3); 
-          box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+          box-shadow: 0 10px 25px rgba(0,0,0,0.4);
         }
 
-        .team { display: flex; align-items: center; gap: 18px; }
+        .team { display: flex; align-items: center; gap: 14px; }
         .team.home { justify-content: flex-end; text-align: right; }
         .team.away { justify-content: flex-start; text-align: left; }
         
         .team-name { 
           font-family: 'Bebas Neue', cursive;
-          font-size: 1.4rem; 
+          font-size: 1.15rem; 
           color: #ffffff; 
-          letter-spacing: 1px;
+          letter-spacing: 0.8px;
         }
 
         .logo-frame { 
-          width: 54px; 
-          height: 54px; 
+          width: 38px; 
+          height: 38px; 
           background: #04060d; 
-          border-radius: 16px; 
-          padding: 8px; 
+          border-radius: 12px; 
+          padding: 5px; 
           display: flex; 
           align-items: center; 
           justify-content: center; 
           border: 1px solid rgba(250, 204, 21, 0.2); 
           flex-shrink: 0; 
-          box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+          box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
         }
 
         .logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -261,22 +269,22 @@ const Fixtures = () => {
           display: flex; 
           flex-direction: column; 
           align-items: center; 
-          gap: 4px; 
-          padding: 0 10px;
+          gap: 2px; 
+          padding: 0 8px;
           border-left: 1px solid rgba(255, 255, 255, 0.06); 
           border-right: 1px solid rgba(255, 255, 255, 0.06); 
         }
 
         .time-val { 
           font-family: 'Bebas Neue', cursive;
-          font-size: 1.6rem; 
+          font-size: 1.35rem; 
           color: #facc15; 
-          letter-spacing: 1px; 
+          letter-spacing: 0.8px; 
           line-height: 1;
         }
 
         .vs-tag { 
-          font-size: 0.65rem; 
+          font-size: 0.55rem; 
           font-weight: 900; 
           color: #64748b; 
           text-transform: uppercase; 
@@ -284,13 +292,26 @@ const Fixtures = () => {
         }
 
         @media (max-width: 768px) {
-          .fixtures-page { padding-top: 100px; }
-          .match-card { grid-template-columns: 1fr 75px 1fr; padding: 18px 12px; border-radius: 20px; }
-          .team { gap: 10px; }
-          .team-name { font-size: 1rem; line-height: 1.1; }
-          .logo-frame { width: 40px; height: 40px; border-radius: 12px; padding: 6px; }
-          .time-val { font-size: 1.2rem; }
-          .md-meta { font-size: 0.75rem; gap: 12px; flex-wrap: wrap; }
+          .fixtures-page { padding-top: 90px; padding-left: 12px; padding-right: 12px; }
+          .header-box { margin-bottom: 25px; }
+          .header-box h1 { font-size: 2.4rem; margin-bottom: 15px; }
+          
+          /* Compact Season Selector Box */
+          .season-selector { padding: 4px; border-radius: 14px; gap: 4px; width: 100%; max-width: 340px; justify-content: space-between; }
+          .season-pill { padding: 6px 10px; font-size: 0.65rem; border-radius: 10px; flex: 1; text-align: center; }
+
+          /* Filter buttons compaction */
+          .filter-btn { padding: 6px 12px; font-size: 0.7rem; border-radius: 10px; }
+
+          /* Clean mobile view adjustments: smaller logos, unbolded text */
+          .match-card { grid-template-columns: 1fr 55px 1fr; padding: 10px 8px; border-radius: 14px; margin-bottom: 8px; }
+          .team { gap: 6px; }
+          .team-name { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; font-size: 0.75rem; line-height: 1.2; letter-spacing: normal; color: #f1f5f9; }
+          .logo-frame { width: 24px; height: 24px; border-radius: 8px; padding: 3px; }
+          .time-val { font-size: 0.95rem; }
+          .vs-tag { font-size: 0.5rem; }
+          .md-meta { font-size: 0.7rem; gap: 8px; flex-wrap: wrap; }
+          .md-badge { padding: 6px 16px; font-size: 0.7rem; }
         }
       `}</style>
 
@@ -325,7 +346,7 @@ const Fixtures = () => {
                   className={`filter-btn ${selectedMatchday === md ? 'active' : ''}`} 
                   onClick={() => setSelectedMatchday(md)}
                 >
-                  Round {md}
+                  {isNaN(md) ? md : `Round ${md}`}
                 </button>
               ))}
             </div>
@@ -339,10 +360,15 @@ const Fixtures = () => {
             <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>The schedule for {selectedSeason} hasn't been released yet.</p>
           </div>
         ) : (
-          Object.keys(groupedByMatchday).sort((a,b) => Number(a)-Number(b)).map(md => (
+          Object.keys(groupedByMatchday).sort((a, b) => {
+            const numA = Number(a);
+            const numB = Number(b);
+            if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+            return String(a).localeCompare(String(b));
+          }).map(md => (
             <div key={md} className="md-section">
               <div className="md-header">
-                <span className="md-badge">Matchday {md}</span>
+                <span className="md-badge">{isNaN(md) ? md : `Matchday ${md}`}</span>
                 <div className="md-meta">
                   <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={15} color="#facc15"/> {groupedByMatchday[md][0].venue}</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={15} color="#facc15"/> {groupedByMatchday[md][0].date}</span>
@@ -367,8 +393,8 @@ const Fixtures = () => {
                   <div className="center-divider">
                     <span className="vs-tag">VS</span>
                     <span className="time-val">{match.time}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748b', fontSize: '0.6rem', fontWeight: 800 }}>
-                       <Clock size={10} color="#facc15" /> UPCOMING
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748b', fontSize: '0.55rem', fontWeight: 800 }}>
+                       <Clock size={9} color="#facc15" /> UPCOMING
                     </div>
                   </div>
 

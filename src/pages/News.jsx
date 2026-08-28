@@ -140,7 +140,7 @@ const News = () => {
         .featured-hero { 
           display: grid; 
           grid-template-columns: 1.2fr 0.8fr; 
-          background: rgba(15, 23, 42, 0.6); 
+          background: rgba(15, 23, 42, 0.9); 
           backdrop-filter: blur(12px);
           border-radius: 28px; 
           overflow: hidden; 
@@ -169,6 +169,7 @@ const News = () => {
           width: 100%; 
           height: 100%; 
           object-fit: cover; 
+          object-position: center 25%;
           transition: transform 0.6s ease; 
         }
 
@@ -216,7 +217,7 @@ const News = () => {
         }
 
         .news-card { 
-          background: rgba(15, 23, 42, 0.6); 
+          background: rgba(15, 23, 42, 0.9); 
           backdrop-filter: blur(12px);
           border-radius: 24px; 
           overflow: hidden; 
@@ -232,7 +233,7 @@ const News = () => {
           transform: translateY(-8px); 
           border-color: rgba(250, 204, 21, 0.5); 
           box-shadow: 0 15px 35px rgba(250, 204, 21, 0.1); 
-          background: rgba(15, 23, 42, 0.85);
+          background: rgba(15, 23, 42, 1);
         }
 
         .card-img { 
@@ -246,6 +247,7 @@ const News = () => {
           width: 100%; 
           height: 100%; 
           object-fit: cover; 
+          object-position: center 25%;
           transition: transform 0.5s ease;
         }
 
@@ -374,7 +376,7 @@ const News = () => {
           </header>
 
           {articles.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 20px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '28px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <div style={{ textAlign: 'center', padding: '80px 20px', background: 'rgba(15, 23, 42, 0.9)', borderRadius: '28px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
               <AlertCircle size={48} className="gold-text" style={{ marginBottom: '15px' }} />
               <p style={{ color: '#ffffff', fontWeight: 700, margin: 0 }}>No news published yet.</p>
             </div>
@@ -432,7 +434,7 @@ const News = () => {
             <div className="modal-scroll">
               <img 
                 src={getImageUrl(selectedArticle.image || selectedArticle.imageUrl)} 
-                style={{ width: '100%', height: '300px', objectFit: 'cover' }} 
+                style={{ width: '100%', height: '300px', objectFit: 'cover', objectPosition: 'center 25%' }} 
                 alt={selectedArticle.title} 
               />
               <div style={{ padding: '35px 30px' }}>
